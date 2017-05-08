@@ -183,11 +183,9 @@ namespace MravKraftAPI.Mravi
             else Health = 0;
         }
 
-        internal Patch PatchAhead(float distance, bool leteci)
+        internal Patch PatchAhead(float distance)
         {
-            Patch pAhead = Patch.GetPatchAt(position + direction * distance);
-
-            return (pAhead == null) ? null : ((pAhead.Wall && !leteci) ? null : pAhead);
+            return Patch.GetPatchAt(position + direction * distance);
         }
 
         // PROTECTED
@@ -204,11 +202,11 @@ namespace MravKraftAPI.Mravi
             }
         }
 
-        protected void Move(float speed, bool leteci = false)
+        protected void Move(float speed)
         {
             if (TurnMovement || PlayerTurn != Owner || !Alive) return;
 
-            Patch patchAhead = PatchAhead(speed, leteci);
+            Patch patchAhead = PatchAhead(speed);
 
             if (patchAhead != null)
             {
