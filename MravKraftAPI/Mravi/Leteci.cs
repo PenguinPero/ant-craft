@@ -63,7 +63,7 @@ namespace MravKraftAPI.Mravi
 
         public override void MoveForward()
         {
-            Move(_defaultSpeed, true);
+            Move(_defaultSpeed);
         }
 
         internal override IEnumerable<Patch> Visibility()
