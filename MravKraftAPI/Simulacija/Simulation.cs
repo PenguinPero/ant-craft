@@ -88,8 +88,8 @@ namespace MravKraftAPI.Simulacija
 
                 if (i < 100)
                 {
-                    Patch.Map[rX, rY].Wall = true;
-                    Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].Wall = true;
+                    //Patch.Map[rX, rY].Wall = true;
+                    //Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].Wall = true;
                 }
                 else
                 {
