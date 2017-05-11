@@ -9,6 +9,7 @@ using System.Linq;
 namespace MravKraftAPI.Mravi
 {
     using Map;
+    using Baze;
 
     public sealed class Leteci : Mrav
     {
@@ -21,12 +22,11 @@ namespace MravKraftAPI.Mravi
 
         public static byte Cost { get; private set; }
         public static byte Duration { get; private set; }
-        public static byte Upkeep { get; private set; }
         public static byte Vision { get; private set; }
         public static byte Damage { get; private set; }
 
-        internal static void Load(ContentManager content, Color wingColor, byte cost = 0, byte duration = 50, byte upkeep = 0,
-                                byte vision = 4, byte damage = 0, byte health = 0, float scale = 0.06f, float speed = 0.55f)
+        internal static void Load(ContentManager content, Color wingColor, byte cost = 0, byte duration = 0,
+                                  byte vision = 4, byte damage = 10, byte health = 50, float scale = 0.06f, float speed = 1.5f)
         {
             _flyBodyTexture = content.Load<Texture2D>(@"Images\Mrav\mravLeteci");
 
@@ -46,7 +46,6 @@ namespace MravKraftAPI.Mravi
 
             Cost = cost;
             Duration = duration;
-            Upkeep = upkeep;
             Vision = vision;
             Damage = damage;
         }
@@ -71,9 +70,19 @@ namespace MravKraftAPI.Mravi
             return Visibility(Vision);
         }
 
+        public override Baza EnemyBase()
+        {
+            return EnemyBase(Vision);
+        }
+
         public override void Attack(Mrav mrav)
         {
             Attack(mrav, Damage);
+        }
+
+        public override void Attack(Baza baza)
+        {
+            Attack(baza, Damage);
         }
 
         internal override void Draw(SpriteBatch spriteBatch)

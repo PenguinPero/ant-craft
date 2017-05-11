@@ -72,7 +72,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(215, 122);
+            this.ClientSize = new System.Drawing.Size(211, 118);
             this.ControlBox = false;
             this.Controls.Add(this.LblShowVision);
             this.Controls.Add(this.CBoxPlayer2);
@@ -84,6 +84,7 @@
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Game options";
+            this.TopMost = true;
             this.Activated += new System.EventHandler(this.ControlForm_Activated);
             this.Deactivate += new System.EventHandler(this.ControlForm_Deactivate);
             this.ResumeLayout(false);

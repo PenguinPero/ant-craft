@@ -16,15 +16,20 @@ namespace MravKraft.Botovi
     public class PenguinPero : Player
     {
         private int vojnikSpawn;
+        private readonly Random _radomizer;
+        private const float PI = (float)Math.PI;
+        private Baza enemyBase;
 
         public PenguinPero(Color color) : base(color)
-        { }
+        {
+            _radomizer = new Random();
+        }
 
         public override void Update(Vojnik vojnik)
         {
             if (vojnik.VisibleEnemies.Count > 0)
             {
-                Mrav closest = vojnik.VisibleEnemies[0];//;.MinBy(m => m.DistanceTo(vojnik.Position));
+                Mrav closest = vojnik.VisibleEnemies.MinBy(m => m.DistanceTo(vojnik.Position));
                 vojnik.Attack(closest);
 
                 if (!vojnik.TurnAttack)
@@ -38,15 +43,40 @@ namespace MravKraft.Botovi
             vojnik.MoveForward();
 
             if (!vojnik.TurnMovement)
-                vojnik.SetRotation(vojnik.Rotation + 180);
+                vojnik.SetRotation(vojnik.Rotation + PI);
         }
 
         public override void Update(Leteci leteci)
         {
+            if (enemyBase == null) enemyBase = leteci.EnemyBase();
+            else
+            {
+                leteci.Attack(enemyBase);
+
+                if (!leteci.TurnAttack)
+                    leteci.MoveForward();
+
+                leteci.Attack(enemyBase);
+                return;
+            }
+
+            if (leteci.VisibleEnemies.Count > 0)
+            {
+                Mrav closest = leteci.VisibleEnemies.MinBy(m => m.DistanceTo(leteci.Position));
+                leteci.Attack(closest);
+
+                if (!leteci.TurnAttack)
+                    leteci.MoveForward();
+
+                leteci.Attack(closest);
+
+                return;
+            }
+
             leteci.MoveForward();
 
             if (!leteci.TurnMovement)
-                leteci.SetRotation(leteci.Rotation + 180);
+                leteci.SetRotation(leteci.Rotation + PI);
         }
 
         public override void Update(Scout scout)
@@ -54,50 +84,30 @@ namespace MravKraft.Botovi
             scout.MoveForward();
 
             if (!scout.TurnMovement)
-                scout.SetRotation(scout.Rotation + 180);
+                scout.SetRotation(scout.Rotation + PI);
         }
 
         public override void Update(Radnik radnik)
         {
             if (radnik.CarryingFood)
             {
+                radnik.MoveForward();
                 radnik.DropResource();
 
-                if (radnik.CarryingFood)
-                {
-                    do
-                    {
-                        radnik.MoveForward();
-
-                        if (!radnik.TurnMovement) radnik.SetRotation(radnik.Rotation + 10);
-                        else break;
-                    } while (true);
-                }
-                else radnik.SetRotation(radnik.Rotation - (float)Math.PI);
+                if (!radnik.CarryingFood)
+                    radnik.SetRotation(radnik.Rotation + PI);
             }
             else
             {
-                Patch closest = radnik.VisiblePatches.Where(p => p.Resources > 0).MinBy(p => radnik.DistanceTo(p.Center));
+                Patch closestWithResources = radnik.VisiblePatches
+                                                   .Where(p => p.Resources > 0)
+                                                   .MinBy(p => radnik.DistanceTo(p.Center));
 
-                if (closest == null)
-                {
-                    radnik.MoveForward();
+                radnik.MoveForward();
+                if (!radnik.TurnMovement) radnik.SetRotation(radnik.Rotation + PI);
 
-                    if (!radnik.TurnMovement) radnik.SetRotation(radnik.Rotation + (float)Math.PI);
-                    else radnik.SetRotation(radnik.Rotation - 0.02f + new Random().Next(3) * 0.02f);
-                }
-                else
-                {
-                    radnik.GrabResource(closest);
-
-                    do
-                    {
-                        radnik.MoveForward();
-
-                        if (!radnik.TurnMovement) radnik.SetRotation(radnik.Rotation + 10);
-                        else break;
-                    } while (true);
-                }
+                if (closestWithResources == null) radnik.SetRotation(radnik.Rotation - 0.02f + (float)_radomizer.NextDouble() * 0.04f);
+                else radnik.GrabResource(closestWithResources);
             }
         }
 

@@ -18,13 +18,17 @@ namespace MravKraftAPI.Baze
         private static Vector2 _origin;
         private static float _defaultScale;
         private static Color _defaultColor;
-        private static uint _defaultResources;
+        private static uint _defaultResources, _defaultHealth;
         private static byte[] _mravCost;
         private static Random _randomizer;
+        private static ushort[] _levelUpkeep;
+        private static byte _defaultResourceDrop;
 
+        internal static byte PlayerTurn { get; set; }
         internal static List<Baza> Baze;
 
-        internal static void Load(ContentManager content, Color backColor, uint startingResources = 50, float scale = 0.18f)
+        internal static void Load(ContentManager content, Color backColor, ushort[] levelUpkeep, uint startingResources = 50,
+                                  uint defaultHealth = 5000, float scale = 0.18f)
         {
             _front = content.Load<Texture2D>(@"Images\Baza\bazaFront");
             _back = content.Load<Texture2D>(@"Images\Baza\bazaBack");
@@ -33,6 +37,9 @@ namespace MravKraftAPI.Baze
             _defaultColor = backColor;
             _defaultScale = scale;
             _defaultResources = startingResources;
+            _defaultHealth = defaultHealth;
+            _levelUpkeep = levelUpkeep;
+            _defaultResourceDrop = (byte)_levelUpkeep.Length;
 
             _mravCost = new byte[4];
             _mravCost[(byte)MravType.Radnik] = Radnik.Cost;
@@ -47,15 +54,24 @@ namespace MravKraftAPI.Baze
         private readonly Vector2 _position;
         private readonly Queue<MravProcess> _productionQueue;
         private readonly Color _color;
+        private byte upkeep;
+        private uint resources;
+        private List<Patch> visiblePatches;
 
         public byte Owner { get; private set; }
-        public uint Resources { get; private set; }
-        public Vector2 Position { get { return _position; } }
+        public uint Resources { get { return (PlayerTurn == Owner) ? resources : 0; } }
+        public uint Health { get; private set; }
+        public byte Upkeep { get { return (PlayerTurn == Owner) ? upkeep : (byte)0; } }
+        public List<Patch> VisiblePatches { get { return (PlayerTurn == Owner) ? visiblePatches : null; } }
+        internal Vector2 Position { get { return _position; } }
+        internal bool Alive { get; private set; }
 
         internal Baza(Vector2 position, Player owner)
         {
             Owner = owner.ID;
-            Resources = _defaultResources;
+            resources = _defaultResources;
+            Health = _defaultHealth;
+            Alive = true;
 
             _color = owner.Color;
             _position = position;
@@ -64,16 +80,39 @@ namespace MravKraftAPI.Baze
 
         internal void Update()
         {
-            SetVisible(4);
+            if (Health == 0)
+            {
+                Alive = false;
+                return;
+            }
+
+            visiblePatches = Visibility(4).ToList();
             Production();
+
+            int count = Mrav.Mravi[Owner].Count;
+
+            try
+            {
+                upkeep = (byte)(_levelUpkeep.Select((e, i) => new { el = e, index = i })
+                                           .First(x => count < x.el).index - 1);
+            }
+            catch { upkeep = (byte)(_levelUpkeep.Length - 1); }
         }
 
         internal void GiveResource()
         {
-            Resources++;
+            resources += (uint)(_defaultResourceDrop - upkeep);
         }
 
-        private void SetVisible(byte radius)
+        internal void TakeDamage(byte damage)
+        {
+            if (Health == 0) return;
+
+            if (Health - damage > 0) Health -= damage;
+            else Health = 0;
+        }
+
+        private IEnumerable<Patch> Visibility(byte radius)
         {
             PXY center = Patch.GetPXYAt(_position).Value;
             int leftX, rightX, leftY, rightY;
@@ -86,7 +125,10 @@ namespace MravKraftAPI.Baze
 
             for (int i = leftX; i <= rightX; i++)
                 for (int j = leftY; j <= rightY; j++)
+                {
                     Patch.Map[i, j].SetVisible(Owner);
+                    yield return Patch.Map[i, j];
+                }
         }
 
         private void Production()
@@ -122,9 +164,11 @@ namespace MravKraftAPI.Baze
 
         public bool ProduceUnit(MravType type, byte count)
         {
+            if (PlayerTurn != Owner) return false;
+
             if (Resources - _mravCost[(byte)type] * count >= 0)
             {
-                Resources -= (uint)(_mravCost[(byte)type] * count);
+                resources -= (uint)(_mravCost[(byte)type] * count);
                 _productionQueue.Enqueue(new MravProcess(type, count));
                 return true;
             }

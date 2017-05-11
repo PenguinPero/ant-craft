@@ -124,6 +124,9 @@ namespace MravKraftAPI.Map
         public byte Resources { get; private set; }
         public Vector2 Center { get { return _resPosition; } }
         public bool Wall { get; internal set; }
+        public int X { get; private set; }
+        public int Y { get; private set; }
+
         internal readonly HashSet<int>[] Mravi;
 
         internal Patch(int x, int y)
@@ -185,6 +188,7 @@ namespace MravKraftAPI.Map
         internal void DrawBack(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(_backTexture, _position, (Mravi[0].Count > 0 || Mravi[1].Count > 0) ? Color.Red : _backColor);
+            //spriteBatch.Draw(_backTexture, _position, _backColor);
         }
 
         internal void DrawFront(SpriteBatch spriteBatch)

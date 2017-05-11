@@ -55,7 +55,7 @@ namespace MravKraftAPI.Simulacija
             Scout.Load(Color.DeepSkyBlue);
             Vojnik.Load(Color.OrangeRed);
 
-            Baza.Load(content, Color.White);
+            Baza.Load(content, Color.White, new ushort[] { 0, 100, 150, 200, 250, 300 });
             Patch.Load(content, Vector2.Zero, Color.Silver, Color.Black, Color.White);
             Resource.Load(content, Color.DodgerBlue, 0.06f);
 
@@ -88,8 +88,8 @@ namespace MravKraftAPI.Simulacija
 
                 if (i < 100)
                 {
-                    //Patch.Map[rX, rY].Wall = true;
-                    //Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].Wall = true;
+                    Patch.Map[rX, rY].Wall = true;
+                    Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].Wall = true;
                 }
                 else
                 {
@@ -117,21 +117,22 @@ namespace MravKraftAPI.Simulacija
         /// <summary> Obavlja jedan korak simulacije, pokrece logiku botova </summary>
         public static void Update()
         {
-            if (gameOver) return;
-
             _mainCamera.Update();
+
+            if (gameOver) return;
 
             Patch.ResetVisibility();
             Leteci.UpdateAnimation();
 
             Baza.Baze.ForEach(b => b.Update());
+
+            // game end
+            if (!Baza.Baze[0].Alive) { gameOver = true; gameOverMessage = $"{_igraci[0].GetType().Name} lost the game."; return; }
+            if (!Baza.Baze[1].Alive) { gameOver = true; gameOverMessage = $"{_igraci[1].GetType().Name} lost the game."; return; }
+
             Mrav.ResetAnts();
 
             Patch.UpdateMap();
-
-            // BOTOVI
-            for (byte i = 0; i < 2; i++)
-                UpdatePlayer(i);
 
 #if true
 
@@ -139,15 +140,22 @@ namespace MravKraftAPI.Simulacija
             {
                 Random rand = new Random();
 
-                Baza.Baze[0].ProduceUnit((MravType)rand.Next(4), 1);
-                Baza.Baze[1].ProduceUnit((MravType)rand.Next(4), 1);
+                //Baza.Baze[0].ProduceUnit((MravType)rand.Next(4), 1);
+                //Baza.Baze[1].ProduceUnit((MravType)rand.Next(4), 1);
+
+                Baza.PlayerTurn = 0;
+                bool temp = Baza.Baze[0].ProduceUnit(MravType.Leteci, 1);
             }
 #endif
+
+            // BOTOVI
+            for (byte i = 0; i < 2; i++)
+                UpdatePlayer(i);
         }
 
         private static void UpdatePlayer(byte playerID)
         {
-            Mrav.PlayerTurn = playerID;
+            Mrav.PlayerTurn = Baza.PlayerTurn = playerID;
             Task pTask = Task.Factory.StartNew(() =>
             {
                 foreach (Mrav mrav in Mrav.Mravi[playerID].Where(m => m != null))
