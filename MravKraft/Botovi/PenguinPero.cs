@@ -18,7 +18,7 @@ namespace MravKraft.Botovi
         private int vojnikSpawn;
         private readonly Random _radomizer;
         private const float PI = (float)Math.PI;
-        private Baza enemyBase;
+        private Baza enemyBase, myBase;
 
         public PenguinPero(Color color) : base(color)
         {
@@ -48,18 +48,6 @@ namespace MravKraft.Botovi
 
         public override void Update(Leteci leteci)
         {
-            if (enemyBase == null) enemyBase = leteci.EnemyBase();
-            else
-            {
-                leteci.Attack(enemyBase);
-
-                if (!leteci.TurnAttack)
-                    leteci.MoveForward();
-
-                leteci.Attack(enemyBase);
-                return;
-            }
-
             if (leteci.VisibleEnemies.Count > 0)
             {
                 Mrav closest = leteci.VisibleEnemies.MinBy(m => m.DistanceTo(leteci.Position));
@@ -70,6 +58,28 @@ namespace MravKraft.Botovi
 
                 leteci.Attack(closest);
 
+                return;
+            }
+
+            if (enemyBase == null)
+            {
+                enemyBase = leteci.EnemyBase();
+
+                if (myBase != null)
+                {
+                    leteci.Face(Patch.Map[Patch.Height - myBase.PatchHere.X,
+                                          Patch.Width - myBase.PatchHere.Y]
+                                          .Center);
+                }
+            }
+            else
+            {
+                leteci.Attack(enemyBase);
+
+                if (!leteci.TurnAttack)
+                    leteci.MoveForward();
+
+                leteci.Attack(enemyBase);
                 return;
             }
 
@@ -113,6 +123,8 @@ namespace MravKraft.Botovi
 
         public override void Update(Baza glavnaBaza)
         {
+            if (myBase == null) myBase = glavnaBaza;
+
             if (vojnikSpawn == 0)
             {
                 if (glavnaBaza.ProduceUnit(MravType.Vojnik, 1))
