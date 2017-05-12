@@ -28,9 +28,11 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.LblShowVision = new System.Windows.Forms.Label();
             this.CBoxPlayer2 = new System.Windows.Forms.CheckBox();
             this.CBoxPlayer1 = new System.Windows.Forms.CheckBox();
+            this.UpdateTimer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // LblShowVision
@@ -68,11 +70,17 @@
             this.CBoxPlayer1.UseVisualStyleBackColor = true;
             this.CBoxPlayer1.CheckedChanged += new System.EventHandler(this.CBoxPlayer1_CheckedChanged);
             // 
+            // UpdateTimer
+            // 
+            this.UpdateTimer.Enabled = true;
+            this.UpdateTimer.Interval = 200;
+            this.UpdateTimer.Tick += new System.EventHandler(this.UpdateTimer_Tick);
+            // 
             // ControlForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(211, 118);
+            this.ClientSize = new System.Drawing.Size(284, 110);
             this.ControlBox = false;
             this.Controls.Add(this.LblShowVision);
             this.Controls.Add(this.CBoxPlayer2);
@@ -96,5 +104,6 @@
         private System.Windows.Forms.Label LblShowVision;
         private System.Windows.Forms.CheckBox CBoxPlayer2;
         private System.Windows.Forms.CheckBox CBoxPlayer1;
+        private System.Windows.Forms.Timer UpdateTimer;
     }
 }

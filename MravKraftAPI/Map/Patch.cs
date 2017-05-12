@@ -26,8 +26,11 @@ namespace MravKraftAPI.Map
 
     public class Patch
     {
-        internal static Patch[,] Map;
-        internal static byte Width, Height, Size;
+        public static Patch[,] Map { get; private set; }
+        public static byte Width { get; private set; }
+        public static byte Height { get; private set; }
+        public static byte Size { get; private set; }
+
         private static Texture2D _backTexture, _frontTexture, _wallTexture;
         private static Color _backColor, _frontColor, _wallColor;
         private static Vector2 _wallOrigin;
@@ -35,15 +38,19 @@ namespace MravKraftAPI.Map
         private static float _defaultScale;
         private static Random _randomizer;
 
-        internal static Vector2 StartPoint;
-        internal static byte PlayerVision;
+        public static float SlowdownValue { get; private set; }
+
+        internal static Vector2 StartPoint { get; private set; }
+        internal static byte PlayerVision { get; set; }
+        internal static byte PlayerTurn { get; set; }
 
         internal static void Load(ContentManager content, Vector2 startPoint, Color backColor, Color frontColor,
-                                  Color wallColor, byte width = 96, byte height = 54, byte size = 20)
+                                  Color wallColor, byte width = 96, byte height = 54, byte size = 20, float slowdown = 0.5f)
         {
             Map = new Patch[Height = height, Width = width];
             Size = size;
             StartPoint = startPoint;
+            SlowdownValue = slowdown;
 
             _size = new Point(size, size);
             _backTexture = content.Load<Texture2D>(@"Images\Mapa\patch");
@@ -120,10 +127,18 @@ namespace MravKraftAPI.Map
         private float resRotation;
         private bool[] visible;
         private bool fogOfWar;
+        private short resources;
+        private bool slowdown;
 
-        public byte Resources { get; private set; }
+        public short Resources { get { return (visible[PlayerTurn]) ? resources : (short)-1; } }
         public Vector2 Center { get { return _resPosition; } }
-        public bool Wall { get; internal set; }
+
+        public bool? Slowdown
+        {
+            get { return (visible[PlayerTurn]) ? (bool?)slowdown : null; }
+            internal set { slowdown = (bool)value; }
+        }
+
         public int X { get; private set; }
         public int Y { get; private set; }
 
@@ -134,9 +149,11 @@ namespace MravKraftAPI.Map
             _position = new Rectangle(new Point((int)(StartPoint.X) + y * Size, (int)(StartPoint.Y) + x * Size), _size);
             _resPosition = new Vector2(_position.X + Size / 2f, _position.Y + Size / 2f);
             Mravi = new HashSet<int>[] { new HashSet<int>(), new HashSet<int>() };
+            X = x;
+            Y = y;
 
             visible = new bool[2];
-            Wall = false;
+            slowdown = false;
         }
 
         internal void Update()
@@ -158,13 +175,18 @@ namespace MravKraftAPI.Map
 
         internal Baza BuildBase(Player owner)
         {
-            return new Baza(_resPosition, owner);
+            return new Baza(_resPosition, owner, this);
         }
 
         internal void GrowResource()
         {
             resRotation = (float)(_randomizer.NextDouble() * Math.PI * 2);
-            Resources++;
+            resources++;
+        }
+
+        internal bool GetSlowdown()
+        {
+            return slowdown;
         }
 
         internal void SetVisible(byte player)
@@ -174,9 +196,9 @@ namespace MravKraftAPI.Map
 
         internal bool TakeResource(Vector2 myPosition)
         {
-            if (Resources == 0 || DistanceTo(myPosition) > 12f) return false;
+            if (resources == 0 || DistanceTo(myPosition) > 12f) return false;
 
-            Resources--;
+            resources--;
             return true;
         }
 
@@ -187,8 +209,8 @@ namespace MravKraftAPI.Map
 
         internal void DrawBack(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_backTexture, _position, (Mravi[0].Count > 0 || Mravi[1].Count > 0) ? Color.Red : _backColor);
-            //spriteBatch.Draw(_backTexture, _position, _backColor);
+            //spriteBatch.Draw(_backTexture, _position, (Mravi[0].Count > 0 || Mravi[1].Count > 0) ? Color.Red : _backColor);
+            spriteBatch.Draw(_backTexture, _position, _backColor);
         }
 
         internal void DrawFront(SpriteBatch spriteBatch)
@@ -196,14 +218,14 @@ namespace MravKraftAPI.Map
             if (fogOfWar) spriteBatch.Draw(_frontTexture, _position, _frontColor);
             else
             {
-                if (Wall) spriteBatch.Draw(_wallTexture, _resPosition, null, _wallColor, 0f, _wallOrigin, _defaultScale, SpriteEffects.None, 0f);
-                else if (Resources > 0) Resource.Draw(spriteBatch, _resPosition, resRotation);
+                if (slowdown) spriteBatch.Draw(_wallTexture, _resPosition, null, _wallColor, 0f, _wallOrigin, _defaultScale, SpriteEffects.None, 0f);
+                else if (resources > 0) Resource.Draw(spriteBatch, _resPosition, resRotation);
             }
         }
 
         public override string ToString()
         {
-            return $"{Center.X} {Center.Y}";
+            return $"PATCH [{X}, {Y}]";
         }
 
     }

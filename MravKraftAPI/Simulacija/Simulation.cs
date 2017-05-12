@@ -6,7 +6,6 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace MravKraftAPI.Simulacija
@@ -26,8 +25,8 @@ namespace MravKraftAPI.Simulacija
         private static string gameOverMessage;
         //private static GameOutput ...
 
-        /// <summary> Učitava formu sa opcijama igre </summary>
-        /// <param name="position"> Pozicija gdje će se forma prikazat </param>
+        /// <summary> Opens up game options windows form </summary>
+        /// <param name="position"> Position of a form, upper right corner of the game window by default </param>
         public static void SetupControl(Point position)
         {
             _controlForm = new ControlForm();
@@ -35,18 +34,19 @@ namespace MravKraftAPI.Simulacija
             _controlForm.Location = new System.Drawing.Point(position.X, position.Y);
         }
 
-        /// <summary> Postavlja kameru za igru </summary>
-        /// <param name="viewport"> Vidno polje, GraphicsDevice.Viewport </param>
-        /// <param name="center"> Pozicija na kojoj se kamera centrirana </param>
+        /// <summary> Sets up game camera </summary>
+        /// <param name="viewport"> Viewport of the window, GraphicsDevice.Viewport </param>
+        /// <param name="center"> Camera's initial center point </param>
         public static void SetupCamera(Viewport viewport, Vector2 center)
         {
             _mainCamera = new Camera2D(viewport, center);
         }
 
-        /// <summary> Load-a simulaciju sa predefiniranim postavkama </summary>
-        /// <param name="content"> ContentManager objekt za učitavanje tekstura </param>
-        /// <param name="player1"> Bot za prvog igrača </param>
-        /// <param name="player2"> Bot za drugog igrača </param>
+        /// <summary> Loads simulation with predefined settings </summary>
+        /// <param name="content"> ContentManager object for loading textures </param>
+        /// <param name="player1"> Player one bot </param>
+        /// <param name="player2"> Player two bot </param>
+        /// <param name="timeout"> Maximum duration for each player's turn </param>
         public static void LoadDefault(ContentManager content, Player player1, Player player2, ushort timeout = 100)
         {
             Mrav.LoadDefault(content);
@@ -88,8 +88,8 @@ namespace MravKraftAPI.Simulacija
 
                 if (i < 100)
                 {
-                    Patch.Map[rX, rY].Wall = true;
-                    Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].Wall = true;
+                    Patch.Map[rX, rY].Slowdown = true;
+                    Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].Slowdown = true;
                 }
                 else
                 {
@@ -97,7 +97,7 @@ namespace MravKraftAPI.Simulacija
                     {
                         rX = rand.Next(Patch.Height);
                         rY = rand.Next(Patch.Width);
-                    } while (Patch.Map[rX, rY].Wall);
+                    } while (Patch.Map[rX, rY].GetSlowdown());
 
                     Patch.Map[rX, rY].GrowResource();
                     Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].GrowResource();
@@ -108,13 +108,13 @@ namespace MravKraftAPI.Simulacija
             {
                 rX = rand.Next(3, Patch.Height - 3);
                 rY = rand.Next(3, Patch.Width / 4);
-            } while (Patch.Map[rX, rY].Wall || Patch.Map[rX, rY].Resources > 0);
+            } while (Patch.Map[rX, rY].GetSlowdown() || Patch.Map[rX, rY].Resources > 0);
 
-            Baza.Baze.Add(Patch.Map[rX, rY].BuildBase(_igraci[0]));
-            Baza.Baze.Add(Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].BuildBase(_igraci[1]));
+            Baza.Baze[0] = Patch.Map[rX, rY].BuildBase(_igraci[0]);
+            Baza.Baze[1] = Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].BuildBase(_igraci[1]);
         }
 
-        /// <summary> Obavlja jedan korak simulacije, pokrece logiku botova </summary>
+        /// <summary> One step of simulation, runs players' bots </summary>
         public static void Update()
         {
             _mainCamera.Update();
@@ -124,7 +124,8 @@ namespace MravKraftAPI.Simulacija
             Patch.ResetVisibility();
             Leteci.UpdateAnimation();
 
-            Baza.Baze.ForEach(b => b.Update());
+            Baza.Baze[0].Update();
+            Baza.Baze[1].Update();
 
             // game end
             if (!Baza.Baze[0].Alive) { gameOver = true; gameOverMessage = $"{_igraci[0].GetType().Name} lost the game."; return; }
@@ -140,9 +141,6 @@ namespace MravKraftAPI.Simulacija
             {
                 Random rand = new Random();
 
-                //Baza.Baze[0].ProduceUnit((MravType)rand.Next(4), 1);
-                //Baza.Baze[1].ProduceUnit((MravType)rand.Next(4), 1);
-
                 Baza.PlayerTurn = 0;
                 bool temp = Baza.Baze[0].ProduceUnit(MravType.Leteci, 1);
             }
@@ -155,7 +153,8 @@ namespace MravKraftAPI.Simulacija
 
         private static void UpdatePlayer(byte playerID)
         {
-            Mrav.PlayerTurn = Baza.PlayerTurn = playerID;
+            Patch.PlayerTurn = Mrav.PlayerTurn = Baza.PlayerTurn = playerID;
+
             Task pTask = Task.Factory.StartNew(() =>
             {
                 foreach (Mrav mrav in Mrav.Mravi[playerID].Where(m => m != null))
@@ -185,14 +184,14 @@ namespace MravKraftAPI.Simulacija
 #endif
         }
 
-        /// <summary> Crta simulaciju, poziva spriteBatch.Begin() i .End() </summary>
-        /// <param name="spriteBatch"> SpriteBatch objekt korišten za crtanje </param>
+        /// <summary> Used for drawing simulation, calls spriteBatch.Begin() and .End() </summary>
+        /// <param name="spriteBatch"> SpriteBatch object used for drawing </param>
         public static void Draw(SpriteBatch spriteBatch)
         {
             _mainCamera.Begin(spriteBatch);
 
             Patch.DrawMapBack(spriteBatch);
-            Baza.Baze.ForEach(b => b.Draw(spriteBatch));
+            Baza.DrawBases(spriteBatch);
 
             Patch.DrawMapFront(spriteBatch);
             Mrav.DrawAll(spriteBatch);

@@ -7,6 +7,8 @@ namespace MravKraftAPI
 
     public partial class ControlForm : Form
     {
+        private string p1, p2;
+
         internal ControlForm()
         {
             InitializeComponent();
@@ -14,8 +16,8 @@ namespace MravKraftAPI
 
         internal void SetNames(string player1, string player2)
         {
-            CBoxPlayer1.Text = player1;
-            CBoxPlayer2.Text = player2;
+            CBoxPlayer1.Text = p1 = player1;
+            CBoxPlayer2.Text = p2 = player2;
 
             Text = $"{player1} vs {player2}";
         }
@@ -42,6 +44,11 @@ namespace MravKraftAPI
             Opacity = 0.8;
         }
 
+        private void UpdateTimer_Tick(object sender, EventArgs e)
+        {
+            CBoxPlayer1.Text = $"{p1} [HP: {Baze.Baza.Baze[0].Health}]";
+            CBoxPlayer2.Text = $"{p2} [HP: {Baze.Baza.Baze[1].Health}]";
+        }
     }
 
 }

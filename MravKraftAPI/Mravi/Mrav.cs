@@ -33,6 +33,7 @@ namespace MravKraftAPI.Mravi
 
             _headTexture = content.Load<Texture2D>(@"Images\Mrav\mravKapa");
             _origin = new Vector2(_headTexture.Width / 2, _headTexture.Height / 2);
+
             Mravi = new List<Mrav>[] { new List<Mrav>(), new List<Mrav>() };
             _recycle = new Stack<int>[] { new Stack<int>(), new Stack<int>() };
         }
@@ -84,8 +85,10 @@ namespace MravKraftAPI.Mravi
         public byte Owner { get; private set; }
         public float Rotation { get; protected set; }
         public byte Health { get; protected set; }
-        internal MravType Type { get; private set; }
         public int ID { get; internal set; }
+        public byte Damage { get; protected set; }
+        public byte Vision { get; protected set; }
+        public float Speed { get; protected set; }
 
         public List<Patch> VisiblePatches { get; private set; }
         public Patch PatchHere { get; private set; }
@@ -94,6 +97,8 @@ namespace MravKraftAPI.Mravi
         public bool TurnMovement { get; protected set; }
         public bool TurnAttack { get; protected set; }
         public bool Alive { get; protected set; }
+
+        internal MravType Type { get; private set; }
 
         internal Mrav(Vector2 position, Color color, byte owner, float rotation, MravType type)
         {
@@ -141,13 +146,6 @@ namespace MravKraftAPI.Mravi
             PatchHere.Mravi[Owner].Add(ID);
         }
 
-        public abstract void MoveForward();
-        public abstract void Attack(Mrav mrav);
-        public abstract void Attack(Baza baza);
-        public abstract Baza EnemyBase();
-        internal abstract IEnumerable<Patch> Visibility();
-        internal abstract void Draw(SpriteBatch spriteBatch);
-
         public void SetRotation(float rotation)
         {
             if (PlayerTurn != Owner || !Alive) return;
@@ -186,7 +184,7 @@ namespace MravKraftAPI.Mravi
             return Patch.GetPatchAt(position + direction * distance);
         }
 
-        protected void Attack(Mrav mrav, byte damage)
+        public void Attack(Mrav mrav)
         {
             if (TurnAttack || PlayerTurn != Owner || !Alive) return;
 
@@ -194,12 +192,12 @@ namespace MravKraftAPI.Mravi
 
             if (DistanceTo(mrav.Position) <= 12f)
             {
-                mrav.TakeDamage(damage);
+                mrav.TakeDamage(Damage);
                 TurnAttack = true;
             }
         }
 
-        protected void Attack(Baza baza, byte damage)
+        public void Attack(Baza baza)
         {
             if (TurnAttack || PlayerTurn != Owner || !Alive) return;
 
@@ -207,16 +205,16 @@ namespace MravKraftAPI.Mravi
 
             if (DistanceTo(baza.Position) <= 12f)
             {
-                baza.TakeDamage(damage);
+                baza.TakeDamage(Damage);
                 TurnAttack = true;
             }
         }
 
-        protected void Move(float speed)
+        public void MoveForward()
         {
             if (TurnMovement || PlayerTurn != Owner || !Alive) return;
 
-            Patch patchAhead = PatchAhead(speed);
+            Patch patchAhead = PatchAhead(Speed);
 
             if (patchAhead != null)
             {
@@ -227,23 +225,28 @@ namespace MravKraftAPI.Mravi
                     PatchHere = patchAhead;
                 }
 
-                position += direction * speed;
-                Animation();
+                if (Type != MravType.Leteci && PatchHere.GetSlowdown())
+                    position += direction * Speed * (1f - Patch.SlowdownValue);
+                else
+                {
+                    position += direction * Speed;
+                    Animation();
+                }
 
                 TurnMovement = true;
             }
         }
 
-        protected IEnumerable<Patch> Visibility(byte radius)
+        private IEnumerable<Patch> Visibility()
         {
             PXY center = Patch.GetPXYAt(position).Value;
             int leftX, rightX, leftY, rightY;
 
-            leftX = (center.X - radius > 0) ? center.X - radius : 0;
-            leftY = (center.Y - radius > 0) ? center.Y - radius : 0;
+            leftX = (center.X - Vision > 0) ? center.X - Vision : 0;
+            leftY = (center.Y - Vision > 0) ? center.Y - Vision : 0;
 
-            rightX = (center.X + radius < Patch.Height) ? center.X + radius : Patch.Height - 1;
-            rightY = (center.Y + radius < Patch.Width) ? center.Y + radius : Patch.Width - 1;
+            rightX = (center.X + Vision < Patch.Height) ? center.X + Vision : Patch.Height - 1;
+            rightY = (center.Y + Vision < Patch.Width) ? center.Y + Vision : Patch.Width - 1;
 
             for (int i = leftX; i <= rightX; i++)
                 for (int j = leftY; j <= rightY; j++)
@@ -253,10 +256,18 @@ namespace MravKraftAPI.Mravi
                 }
         }
 
-        protected Baza EnemyBase(byte radius)
+        public Baza EnemyBase()
         {
-            return (DistanceTo(Baza.Baze[1 - Owner].Position) <= radius * Patch.Size) ? Baza.Baze[1 - Owner] : null;
+            Baza enemyBase = Baza.Baze[1 - Owner];
+
+            if (Math.Abs(enemyBase.PatchHere.X - PatchHere.X) > Vision ||
+                Math.Abs(enemyBase.PatchHere.Y - PatchHere.Y) > Vision)
+                return null;
+
+            return enemyBase;
         }
+
+        internal abstract void Draw(SpriteBatch spriteBatch);
 
     }
 }

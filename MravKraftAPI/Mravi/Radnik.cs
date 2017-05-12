@@ -1,10 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Content;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace MravKraftAPI.Mravi
 {
@@ -16,11 +11,11 @@ namespace MravKraftAPI.Mravi
         private static Color _headColor;
         private static float _defaultScale, _defaultSpeed;
         private static byte _defaultHealth;
+        private static byte _defaultVision;
+        private static byte _defaultDamage;
 
         public static byte Cost { get; private set; }
         public static byte Duration { get; private set; }
-        public static byte Vision { get; private set; }
-        public static byte Damage { get; private set; }
 
         internal static void Load(Color headColor, byte cost = 5, byte duration = 10, byte vision = 2,
                                   byte damage = 0, byte health = 100, float scale = 0.06f, float speed = 1.4f)
@@ -32,40 +27,19 @@ namespace MravKraftAPI.Mravi
 
             Cost = cost;
             Duration = duration;
-            Vision = vision;
-            Damage = damage;
+            _defaultVision = vision;
+            _defaultDamage = damage;
         }
 
         public bool CarryingFood { get; private set; }
 
-        internal Radnik(Vector2 position, Color color, byte owner, float rotation) : base(position, color, owner, rotation, MravType.Radnik)
+        internal Radnik(Vector2 position, Color color, byte owner, float rotation)
+            : base(position, color, owner, rotation, MravType.Radnik)
         {
             Health = _defaultHealth;
-        }
-
-        internal override IEnumerable<Patch> Visibility()
-        {
-            return Visibility(Vision);
-        }
-
-        public override Baza EnemyBase()
-        {
-            return EnemyBase(Vision);
-        }
-
-        public override void Attack(Mrav mrav)
-        {
-            Attack(mrav, Damage);
-        }
-
-        public override void Attack(Baza baza)
-        {
-            Attack(baza, Damage);
-        }
-
-        public override void MoveForward()
-        {
-            Move(_defaultSpeed);
+            Damage = _defaultDamage;
+            Vision = _defaultVision;
+            Speed = _defaultSpeed;
         }
 
         public void GrabResource(Patch patch)
@@ -74,8 +48,8 @@ namespace MravKraftAPI.Mravi
 
             Face(patch.Center);
 
-            if (patch.TakeResource(position)) CarryingFood = true;
-            else Move(_defaultSpeed);
+            if (patch.TakeResource(position))
+                CarryingFood = true;
         }
 
         public void DropResource()

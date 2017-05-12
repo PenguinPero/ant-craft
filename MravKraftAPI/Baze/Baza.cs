@@ -25,10 +25,10 @@ namespace MravKraftAPI.Baze
         private static byte _defaultResourceDrop;
 
         internal static byte PlayerTurn { get; set; }
-        internal static List<Baza> Baze;
+        internal static Baza[] Baze { get; set; }
 
         internal static void Load(ContentManager content, Color backColor, ushort[] levelUpkeep, uint startingResources = 50,
-                                  uint defaultHealth = 5000, float scale = 0.18f)
+                                  uint defaultHealth = 100000, float scale = 0.18f)
         {
             _front = content.Load<Texture2D>(@"Images\Baza\bazaFront");
             _back = content.Load<Texture2D>(@"Images\Baza\bazaBack");
@@ -48,7 +48,13 @@ namespace MravKraftAPI.Baze
             _mravCost[(byte)MravType.Leteci] = Leteci.Cost;
 
             _randomizer = new Random();
-            Baze = new List<Baza>(2);
+            Baze = new Baza[2];
+        }
+
+        internal static void DrawBases(SpriteBatch spriteBatch)
+        {
+            Baze[0].Draw(spriteBatch);
+            Baze[1].Draw(spriteBatch);
         }
 
         private readonly Vector2 _position;
@@ -65,13 +71,15 @@ namespace MravKraftAPI.Baze
         public List<Patch> VisiblePatches { get { return (PlayerTurn == Owner) ? visiblePatches : null; } }
         internal Vector2 Position { get { return _position; } }
         internal bool Alive { get; private set; }
+        public Patch PatchHere { get; private set; }
 
-        internal Baza(Vector2 position, Player owner)
+        internal Baza(Vector2 position, Player owner, Patch patchHere)
         {
             Owner = owner.ID;
             resources = _defaultResources;
             Health = _defaultHealth;
             Alive = true;
+            PatchHere = patchHere;
 
             _color = owner.Color;
             _position = position;

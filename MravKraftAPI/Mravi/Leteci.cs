@@ -2,14 +2,9 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace MravKraftAPI.Mravi
 {
     using Map;
-    using Baze;
 
     public sealed class Leteci : Mrav
     {
@@ -19,11 +14,11 @@ namespace MravKraftAPI.Mravi
         private static float _defaultScale, _defaultSpeed;
         private static Color _defaultColor;
         private static byte _defaultHealth;
+        private static byte _defaultVision;
+        private static byte _defaultDamage;
 
         public static byte Cost { get; private set; }
         public static byte Duration { get; private set; }
-        public static byte Vision { get; private set; }
-        public static byte Damage { get; private set; }
 
         internal static void Load(ContentManager content, Color wingColor, byte cost = 0, byte duration = 0,
                                   byte vision = 4, byte damage = 10, byte health = 50, float scale = 0.06f, float speed = 1.5f)
@@ -46,8 +41,8 @@ namespace MravKraftAPI.Mravi
 
             Cost = cost;
             Duration = duration;
-            Vision = vision;
-            Damage = damage;
+            _defaultVision = vision;
+            _defaultDamage = damage;
         }
 
         internal static void UpdateAnimation()
@@ -55,34 +50,13 @@ namespace MravKraftAPI.Mravi
             _wingsAnimation.Update();
         }
 
-        internal Leteci(Vector2 position, Color color, byte owner, float rotation) : base(position, color, owner, rotation, MravType.Leteci)
+        internal Leteci(Vector2 position, Color color, byte owner, float rotation)
+            : base(position, color, owner, rotation, MravType.Leteci)
         {
             Health = _defaultHealth;
-        }
-
-        public override void MoveForward()
-        {
-            Move(_defaultSpeed);
-        }
-
-        internal override IEnumerable<Patch> Visibility()
-        {
-            return Visibility(Vision);
-        }
-
-        public override Baza EnemyBase()
-        {
-            return EnemyBase(Vision);
-        }
-
-        public override void Attack(Mrav mrav)
-        {
-            Attack(mrav, Damage);
-        }
-
-        public override void Attack(Baza baza)
-        {
-            Attack(baza, Damage);
+            Damage = _defaultDamage;
+            Vision = _defaultVision;
+            Speed = _defaultSpeed;
         }
 
         internal override void Draw(SpriteBatch spriteBatch)
