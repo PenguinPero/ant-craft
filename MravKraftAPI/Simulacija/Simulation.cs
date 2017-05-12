@@ -132,7 +132,6 @@ namespace MravKraftAPI.Simulacija
             if (!Baza.Baze[1].Alive) { gameOver = true; gameOverMessage = $"{_igraci[1].GetType().Name} lost the game."; return; }
 
             Mrav.ResetAnts();
-
             Patch.UpdateMap();
 
 #if true

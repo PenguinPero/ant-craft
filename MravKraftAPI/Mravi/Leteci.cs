@@ -53,7 +53,7 @@ namespace MravKraftAPI.Mravi
         internal Leteci(Vector2 position, Color color, byte owner, float rotation)
             : base(position, color, owner, rotation, MravType.Leteci)
         {
-            Health = _defaultHealth;
+            health = _defaultHealth;
             Damage = _defaultDamage;
             Vision = _defaultVision;
             Speed = _defaultSpeed;
@@ -61,8 +61,8 @@ namespace MravKraftAPI.Mravi
 
         internal override void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_flyBodyTexture, position, null, _color, Rotation, _flyOrigin, _defaultScale, SpriteEffects.None, 0f);
-            spriteBatch.Draw(_wingsAnimation.CurrentTexture, position, null, _defaultColor, Rotation, _flyOrigin, _defaultScale, SpriteEffects.None, 0f);
+            spriteBatch.Draw(_flyBodyTexture, position, null, _color, rotation, _flyOrigin, _defaultScale, SpriteEffects.None, 0f);
+            spriteBatch.Draw(_wingsAnimation.CurrentTexture, position, null, _defaultColor, rotation, _flyOrigin, _defaultScale, SpriteEffects.None, 0f);
         }
 
     }

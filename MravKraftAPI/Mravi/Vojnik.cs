@@ -31,7 +31,7 @@ namespace MravKraftAPI.Mravi
         internal Vojnik(Vector2 position, Color color, byte owner, float rotation)
             : base(position, color, owner, rotation, MravType.Vojnik)
         {
-            Health = _defaultHealth;
+            health = _defaultHealth;
             Damage = _defaultDamage;
             Vision = _defaultVision;
             Speed = _defaultSpeed;
@@ -39,8 +39,8 @@ namespace MravKraftAPI.Mravi
 
         internal override void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_bodyTextures[bodyIndex], position, null, _color, Rotation, _origin, _defaultScale, SpriteEffects.None, 0f);
-            spriteBatch.Draw(_headTexture, position, null, _headColor, Rotation, _origin, _defaultScale, SpriteEffects.None, 0f);
+            spriteBatch.Draw(_bodyTextures[bodyIndex], position, null, _color, rotation, _origin, _defaultScale, SpriteEffects.None, 0f);
+            spriteBatch.Draw(_headTexture, position, null, _headColor, rotation, _origin, _defaultScale, SpriteEffects.None, 0f);
         }
 
     }
