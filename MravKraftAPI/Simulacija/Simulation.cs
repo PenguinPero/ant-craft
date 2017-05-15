@@ -112,6 +112,12 @@ namespace MravKraftAPI.Simulacija
 
             Baza.Baze[0] = Patch.Map[rX, rY].BuildBase(_igraci[0]);
             Baza.Baze[1] = Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].BuildBase(_igraci[1]);
+
+            for (int i = 0; i < 6; i++)
+            {
+                Mrav.AddNew(0, new Radnik(Baza.Baze[0].Position, _igraci[0].Color, 0, (float)(rand.NextDouble() * Math.PI * 2)));
+                Mrav.AddNew(1, new Radnik(Baza.Baze[1].Position, _igraci[1].Color, 1, (float)(rand.NextDouble() * Math.PI * 2)));
+            }
         }
 
         /// <summary> One step of simulation, runs players' bots </summary>
@@ -138,10 +144,8 @@ namespace MravKraftAPI.Simulacija
 
             if (Keyboard.GetState().IsKeyDown(Keys.Enter))
             {
-                Random rand = new Random();
-
-                Baza.PlayerTurn = 0;
-                bool temp = Baza.Baze[0].ProduceUnit(MravType.Leteci, 1);
+                Mrav.AddNew(0, new Vojnik(Baza.Baze[0].Position, _igraci[0].Color, 0, 0f));
+                Mrav.AddNew(1, new Leteci(Baza.Baze[1].Position, _igraci[1].Color, 1, 0f));
             }
 #endif
 

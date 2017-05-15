@@ -14,8 +14,8 @@ namespace MravKraftAPI.Mravi
         public static byte Cost { get; private set; }
         public static byte Duration { get; private set; }
 
-        internal static void Load(Color headColor, byte cost = 0, byte duration = 5, byte vision = 4,
-                                  byte damage = 0, byte health = 50, float scale = 0.06f, float speed = 0.6f)
+        internal static void Load(Color headColor, byte cost = 75, byte duration = 38, byte vision = 3,
+                                  byte damage = 3, byte health = 25, float scale = 0.06f, float speed = 1.25f)
         {
             _headColor = headColor;
             _defaultScale = scale;

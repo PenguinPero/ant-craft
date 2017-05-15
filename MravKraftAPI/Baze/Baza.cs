@@ -18,7 +18,7 @@ namespace MravKraftAPI.Baze
         private static Vector2 _origin;
         private static float _defaultScale;
         private static Color _defaultColor;
-        private static uint _defaultResources, _defaultHealth;
+        private static int _defaultResources, _defaultHealth;
         private static byte[] _mravCost;
         private static Random _randomizer;
         private static ushort[] _levelUpkeep;
@@ -27,8 +27,8 @@ namespace MravKraftAPI.Baze
         internal static byte PlayerTurn { get; set; }
         internal static Baza[] Baze { get; set; }
 
-        internal static void Load(ContentManager content, Color backColor, ushort[] levelUpkeep, uint startingResources = 50,
-                                  uint defaultHealth = 100000, float scale = 0.18f)
+        internal static void Load(ContentManager content, Color backColor, ushort[] levelUpkeep, int startingResources = 50,
+                                  int defaultHealth = 100000, float scale = 0.18f)
         {
             _front = content.Load<Texture2D>(@"Images\Baza\bazaFront");
             _back = content.Load<Texture2D>(@"Images\Baza\bazaBack");
@@ -61,12 +61,12 @@ namespace MravKraftAPI.Baze
         private readonly Queue<MravProcess> _productionQueue;
         private readonly Color _color;
         private byte upkeep;
-        private uint resources;
+        private int resources;
         private List<Patch> visiblePatches;
 
         public byte Owner { get; private set; }
-        public uint Resources { get { return (PlayerTurn == Owner) ? resources : 0; } }
-        public uint Health { get; private set; }
+        public int Resources { get { return (PlayerTurn == Owner) ? resources : 0; } }
+        public int Health { get; private set; }
         public byte Upkeep { get { return (PlayerTurn == Owner) ? upkeep : (byte)0; } }
         public List<Patch> VisiblePatches { get { return (PlayerTurn == Owner) ? visiblePatches : null; } }
         internal Vector2 Position { get { return _position; } }
@@ -109,7 +109,7 @@ namespace MravKraftAPI.Baze
 
         internal void GiveResource()
         {
-            resources += (uint)(_defaultResourceDrop - upkeep);
+            resources += _defaultResourceDrop - upkeep;
         }
 
         internal void TakeDamage(byte damage)
@@ -176,7 +176,7 @@ namespace MravKraftAPI.Baze
 
             if (Resources - _mravCost[(byte)type] * count >= 0)
             {
-                resources -= (uint)(_mravCost[(byte)type] * count);
+                resources -= _mravCost[(byte)type] * count;
                 _productionQueue.Enqueue(new MravProcess(type, count));
                 return true;
             }

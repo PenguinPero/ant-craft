@@ -15,7 +15,7 @@ namespace MravKraft.Botovi
 {
     public class PenguinPero : Player
     {
-        private int vojnikSpawn;
+        private int vojnikSpawn = 3;
         private readonly Random _radomizer;
         private const float PI = (float)Math.PI;
         private Baza enemyBase, myBase;
@@ -28,6 +28,18 @@ namespace MravKraft.Botovi
 
         public override void Update(Vojnik vojnik)
         {
+            if (enemyBase == null)
+            {
+                enemyBase = vojnik.EnemyBase();
+
+                if (myBase != null)
+                {
+                    vojnik.Face(Patch.Map[Patch.Height - myBase.PatchHere.X,
+                                          Patch.Width - myBase.PatchHere.Y]
+                                          .Center);
+                }
+            }
+
             if (vojnik.VisibleEnemies.Count > 0)
             {
                 Mrav closest = vojnik.VisibleEnemies.MinBy(m => m.DistanceTo(vojnik.Position));

@@ -84,7 +84,7 @@ namespace MravKraftAPI.Mravi
         protected byte bodyIndex;
         protected readonly Color _color;
         protected float rotation;
-        protected byte health;
+        protected short health;
         protected bool alive;
 
         private bool turnMovement, turnAttack;
@@ -111,7 +111,7 @@ namespace MravKraftAPI.Mravi
 
         public Vector2 Position { get { return GetterCheck(position); } }
         public float Rotation { get { return GetterCheck(rotation); } }
-        public byte Health { get { return GetterCheck(health); } }
+        public short Health { get { return GetterCheck(health); } }
         public bool TurnMovement { get { return GetterCheck(turnMovement); } }
         public bool TurnAttack { get { return GetterCheck(turnAttack); } }
         public bool Alive { get { return GetterCheck(alive); } }
