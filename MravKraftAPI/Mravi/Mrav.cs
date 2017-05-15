@@ -98,16 +98,27 @@ namespace MravKraftAPI.Mravi
         public byte Vision { get; protected set; }
         public float Speed { get; protected set; }
 
-        public Vector2 Position { get { return (PlayerTurn != Owner) ? ((visibleToEnemy) ? position : Vector2.Zero) : position; } }
-        public float Rotation { get { return (PlayerTurn != Owner) ? ((visibleToEnemy) ? rotation : -1f) : rotation; } }
-        public byte Health { get { return (PlayerTurn != Owner) ? ((visibleToEnemy) ? health : (byte)0) : health; } }
-        public bool TurnMovement { get { return (PlayerTurn != Owner) ? ((visibleToEnemy) ? turnMovement : false) : turnMovement; } }
-        public bool TurnAttack { get { return (PlayerTurn != Owner) ? ((visibleToEnemy) ? turnAttack : false) : turnAttack; } }
-        public bool Alive { get { return (PlayerTurn != Owner) ? ((visibleToEnemy) ? alive : false) : alive; } }
+        protected TProp GetterCheck<TProp>(TProp field)
+        {
+            if (PlayerTurn != Owner)
+            {
+                if (visibleToEnemy) return field;
+                return default(TProp);
+            }
 
-        public List<Patch> VisiblePatches { get { return (PlayerTurn != Owner) ? ((visibleToEnemy) ? visiblePatches : null) : visiblePatches; } }
-        public Patch PatchHere { get { return (PlayerTurn != Owner) ? ((visibleToEnemy) ? patchHere : null) : patchHere; } }
-        public List<Mrav> VisibleEnemies { get { return (PlayerTurn != Owner) ? ((visibleToEnemy) ? visibleEnemies : null) : visibleEnemies; } }
+            return field;
+        }
+
+        public Vector2 Position { get { return GetterCheck(position); } }
+        public float Rotation { get { return GetterCheck(rotation); } }
+        public byte Health { get { return GetterCheck(health); } }
+        public bool TurnMovement { get { return GetterCheck(turnMovement); } }
+        public bool TurnAttack { get { return GetterCheck(turnAttack); } }
+        public bool Alive { get { return GetterCheck(alive); } }
+
+        public List<Patch> VisiblePatches { get { return GetterCheck(visiblePatches); } }
+        public Patch PatchHere { get { return GetterCheck(patchHere); } }
+        public List<Mrav> VisibleEnemies { get { return GetterCheck(visibleEnemies); } }
 
         internal MravType Type { get; private set; }
         protected bool visibleToEnemy;

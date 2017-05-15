@@ -33,7 +33,7 @@ namespace MravKraftAPI.Mravi
 
         private bool carryingFood;
 
-        public bool CarryingFood { get { return (PlayerTurn != Owner) ? ((visibleToEnemy) ? carryingFood : false) : carryingFood; } }
+        public bool CarryingFood { get { return GetterCheck(carryingFood); } }
 
         internal Radnik(Vector2 position, Color color, byte owner, float rotation)
             : base(position, color, owner, rotation, MravType.Radnik)
