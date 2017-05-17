@@ -95,6 +95,8 @@ namespace MravKraftAPI.Mravi
         public byte Owner { get; private set; }
         public int ID { get; internal set; }
         public byte Damage { get; protected set; }
+        public byte Armor { get; protected set; }
+        public byte ArmorPen { get; protected set; }
         public byte Vision { get; protected set; }
         public float Speed { get; protected set; }
 
@@ -204,12 +206,12 @@ namespace MravKraftAPI.Mravi
             Face(patch.Center);
         }
 
-        internal void TakeDamage(byte damage)
+        internal void TakeDamage(byte damage, byte armorPen)
         {
             if (health == 0) return;
 
-            if (health - damage > 0) health -= damage;
-            else health = 0;
+            health -= (short)(damage - Armor + armorPen);
+            if (health < 0) health = 0;
         }
 
         internal Patch PatchAhead(float distance)
@@ -225,7 +227,7 @@ namespace MravKraftAPI.Mravi
 
             if (DistanceTo(mrav.position) <= 12f)
             {
-                mrav.TakeDamage(Damage);
+                mrav.TakeDamage(Damage, ArmorPen);
                 turnAttack = true;
             }
         }

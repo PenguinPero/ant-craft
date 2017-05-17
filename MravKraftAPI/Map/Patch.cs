@@ -177,7 +177,7 @@ namespace MravKraftAPI.Map
             return new Baza(_resPosition, owner, this);
         }
 
-        internal void GrowResource(byte count)
+        internal void GrowResource(short count = 2000)
         {
             resRotation = (float)(_randomizer.NextDouble() * Math.PI * 2);
             resources += count;

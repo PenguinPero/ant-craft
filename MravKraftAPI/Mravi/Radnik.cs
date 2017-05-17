@@ -13,17 +13,21 @@ namespace MravKraftAPI.Mravi
         private static byte _defaultHealth;
         private static byte _defaultVision;
         private static byte _defaultDamage;
+        private static byte _defaultArmor;
+        private static byte _defaultArmorPen;
 
         public static byte Cost { get; private set; }
         public static byte Duration { get; private set; }
 
         internal static void Load(Color headColor, byte cost = 50, byte duration = 30, byte vision = 2,
-                                  byte damage = 5, byte health = 50, float scale = 0.06f, float speed = 1f)
+                                  byte damage = 5, byte health = 50, byte armor = 2, byte armorPen = 0, float scale = 0.06f, float speed = 1f)
         {
             _headColor = headColor;
             _defaultScale = scale;
             _defaultSpeed = speed;
             _defaultHealth = health;
+            _defaultArmor = armor;
+            _defaultArmorPen = armorPen;
 
             Cost = cost;
             Duration = duration;
@@ -39,6 +43,8 @@ namespace MravKraftAPI.Mravi
             : base(position, color, owner, rotation, MravType.Radnik)
         {
             health = _defaultHealth;
+            Armor = _defaultArmor;
+            ArmorPen = _defaultArmorPen;
             Damage = _defaultDamage;
             Vision = _defaultVision;
             Speed = _defaultSpeed;
