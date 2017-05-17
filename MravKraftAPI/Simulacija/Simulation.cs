@@ -160,9 +160,7 @@ namespace MravKraftAPI.Simulacija
 
             Task pTask = Task.Factory.StartNew(() =>
             {
-                foreach (Mrav mrav in Mrav.Mravi[playerID].Where(m => m != null))
-                    _igraci[playerID].Update(mrav);
-
+                _igraci[playerID].Update(Mrav.Mravi[playerID].Where(m => m != null).ToList());
                 _igraci[playerID].Update(Baza.Baze[playerID]);
             });
 

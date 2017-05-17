@@ -122,7 +122,7 @@ namespace MravKraftAPI.Mravi
         public Patch PatchHere { get { return GetterCheck(patchHere); } }
         public List<Mrav> VisibleEnemies { get { return GetterCheck(visibleEnemies); } }
 
-        internal MravType Type { get; private set; }
+        public MravType Type { get; private set; }
         protected bool visibleToEnemy;
 
         internal Mrav(Vector2 position, Color color, byte owner, float rotation, MravType type)
