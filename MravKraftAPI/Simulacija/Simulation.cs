@@ -81,7 +81,7 @@ namespace MravKraftAPI.Simulacija
             Random rand = new Random();
             int rX, rY;
 
-            for (int i = 0; i < 600; i++)
+            for (int i = 0; i < 150; i++)
             {
                 rX = rand.Next(Patch.Height);
                 rY = rand.Next(Patch.Width);
