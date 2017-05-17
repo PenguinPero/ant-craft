@@ -23,7 +23,7 @@ namespace MravKraftAPI.Mravi
         public static byte Duration { get; private set; }
 
         internal static void Load(ContentManager content, Color wingColor, byte cost = 150, byte duration = 75,
-                                  byte vision = 4, byte damage = 10, byte health = 50, byte armor = 2, byte armorPen = 0, float scale = 0.06f, float speed = 1.5f)
+                                  byte vision = 4, byte damage = 10, byte health = 50, byte armor = 0, byte armorPen = 0, float scale = 0.06f, float speed = 1.5f)
         {
             _flyBodyTexture = content.Load<Texture2D>(@"Images\Mrav\mravLeteci");
 
