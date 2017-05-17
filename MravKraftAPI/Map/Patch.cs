@@ -177,10 +177,10 @@ namespace MravKraftAPI.Map
             return new Baza(_resPosition, owner, this);
         }
 
-        internal void GrowResource()
+        internal void GrowResource(byte count)
         {
             resRotation = (float)(_randomizer.NextDouble() * Math.PI * 2);
-            resources++;
+            resources += count;
         }
 
         internal bool GetSlowdown()
