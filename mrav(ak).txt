@@ -1,0 +1,81 @@
+// URGENT: ODVOJIT MOVEMENT I NAPAD
+
+###Mravi
+
+** dmg = att - armor + ap => min dmg = 1
+
+Radnik:
+	cost = 50
+	hp = 50
+	armor = 0
+	att = 5
+	ap = 0
+	speed = 1
+	vision = 2
+	//kupi i nosi 5 hrane
+	duration = 30
+	upkeap = 1
+
+Vojnik:
+	cost = 100
+	hp = 75
+	armor = 2
+	att = 12
+	ap = 0
+	speed = 0.75
+	vision = 2
+	duration = 60
+	upkeap = 2
+
+Scout:
+	cost = 75
+	hp = 25
+	armor = 0
+	att = 3
+	ap = 2
+	armor = 0
+	speed = 1.25
+	vision = 3
+	duration = 38
+	upkeap = 1
+
+Letac:
+	cost = 150
+	hp = 50
+	armor = 0
+	att = 10
+	ap = 0
+	speed = 1.5
+	vision = 4
+	duration = 75
+	upkeap = 2
+###
+
+###Baza
+
+broj_mravi;
+
+max_mravi   = [50,100,150,200, 250, 300]
+upkeap_cost = [-0, -1, -2, -3,  -4,  -5]
+
+//upkeap cost se oduzima od hrane koju radnik donosi u bazu.
+//ako imamo 123 mrava kad radnik donese 5 hrane => 5-2 => 3 //to znaci baza dobije 3 hrane
+
+###
+
+###ToUpdate
+
+	-Doadat kolekciju stvari sta baza vidi nakon 	razmjenjivanja 	poruka s mravima.
+
+	-Dodati kolekciju stvari sta je baza vidila a nevidi 	trenutno
+	
+	-Dodati kolekciju stvari sta je baza vidila i sta su 	staticne (hrana, neprijateljska baza, etc.)
+
+	-Dovrist metode mravi za kretanje napadanje itd... tako 
+	da ih baza poziva samo jednu po potezu. Tj. Salje mravu 	poruku koja sadrzi naredbu: koju metodu treba pozvat i 	parametre te metode, ako cemo preko poruka radit.
+
+	
+
+	
+
+###
