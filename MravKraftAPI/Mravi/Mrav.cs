@@ -40,8 +40,11 @@ namespace MravKraftAPI.Mravi
 
         internal static void ResetAnts()
         {
-            Mravi[0].ForEach(m => { if (m != null) m.visibleToEnemy = false; });
-            Mravi[1].ForEach(m => { if (m != null) m.visibleToEnemy = false; });
+            for (int i = 0; i < Mravi[0].Count; i++)
+                Mravi[0][i]?.PreUpdate();
+
+            for (int i = 0; i < Mravi[1].Count; i++)
+                Mravi[1][i]?.PreUpdate();
 
             for (int i = 0; i < Mravi[0].Count; i++)
                 Mravi[0][i]?.Update();
@@ -86,8 +89,9 @@ namespace MravKraftAPI.Mravi
         protected float rotation;
         protected short health;
         protected bool alive;
+        protected bool returnedHit;
 
-        private bool turnMovement, turnAttack;
+        private bool movedOrAttacked;
         private List<Patch> visiblePatches;
         private Patch patchHere;
         private List<Mrav> visibleEnemies;
@@ -114,8 +118,7 @@ namespace MravKraftAPI.Mravi
         public Vector2 Position { get { return GetterCheck(position); } }
         public float Rotation { get { return GetterCheck(rotation); } }
         public short Health { get { return GetterCheck(health); } }
-        public bool TurnMovement { get { return GetterCheck(turnMovement); } }
-        public bool TurnAttack { get { return GetterCheck(turnAttack); } }
+        public bool MovedOrAttacked { get { return GetterCheck(movedOrAttacked); } }
         public bool Alive { get { return GetterCheck(alive); } }
 
         public List<Patch> VisiblePatches { get { return GetterCheck(visiblePatches); } }
@@ -147,18 +150,22 @@ namespace MravKraftAPI.Mravi
             bodyIndex = (byte)((bodyIndex + 1) % _bodyCount);
         }
 
-        private void Update()
+        private void PreUpdate()
         {
-            if (health == 0)
+            if (!alive)
             {
-                alive = false;
                 patchHere.Mravi[Owner].Remove(ID);
                 Die(Owner, ID);
 
                 return;
             }
 
-            turnMovement = turnAttack = false;
+            visibleToEnemy = false;
+        }
+
+        private void Update()
+        {
+            returnedHit = movedOrAttacked = false;
             visiblePatches = Visibility().ToList();
 
             visibleEnemies.Clear();
@@ -196,7 +203,7 @@ namespace MravKraftAPI.Mravi
         public void Face(Baza baza)
         {
             if (baza.Owner != Owner && EnemyBase() != null || baza.Owner == Owner)
-                    Face(baza.PatchHere);
+                Face(baza.PatchHere);
         }
 
         public void Face(Patch patch)
@@ -208,10 +215,15 @@ namespace MravKraftAPI.Mravi
 
         internal void TakeDamage(byte damage, byte armorPen)
         {
-            if (health == 0) return;
+            if (!alive) return;
 
             health -= (short)(damage - Armor + armorPen);
-            if (health < 0) health = 0;
+
+            if (health <= 0)
+            {
+                health = 0;
+                alive = false;
+            }
         }
 
         internal Patch PatchAhead(float distance)
@@ -221,33 +233,40 @@ namespace MravKraftAPI.Mravi
 
         public void Attack(Mrav mrav)
         {
-            if (turnAttack || PlayerTurn != Owner || !alive || mrav == null) return;
+            if (movedOrAttacked || PlayerTurn != Owner || !alive || mrav == null) return;
 
             Face(mrav.position);
 
             if (DistanceTo(mrav.position) <= 12f)
             {
                 mrav.TakeDamage(Damage, ArmorPen);
-                turnAttack = true;
+
+                if (!mrav.returnedHit)
+                {
+                    TakeDamage(mrav.Damage, mrav.ArmorPen);
+                    mrav.returnedHit = true;
+                }
+
+                movedOrAttacked = true;
             }
         }
 
         public void Attack(Baza baza)
         {
-            if (turnAttack || PlayerTurn != Owner || !alive || baza == null) return;
+            if (movedOrAttacked || PlayerTurn != Owner || !alive || baza == null) return;
 
             Face(baza.Position);
 
             if (DistanceTo(baza.Position) <= 12f)
             {
                 baza.TakeDamage(Damage);
-                turnAttack = true;
+                movedOrAttacked = true;
             }
         }
 
         public void MoveForward()
         {
-            if (turnMovement || PlayerTurn != Owner || !alive) return;
+            if (movedOrAttacked || PlayerTurn != Owner || !alive) return;
 
             Patch patchAhead = PatchAhead(Speed);
 
@@ -268,7 +287,7 @@ namespace MravKraftAPI.Mravi
                     Animation();
                 }
 
-                turnMovement = true;
+                movedOrAttacked = true;
             }
         }
 
