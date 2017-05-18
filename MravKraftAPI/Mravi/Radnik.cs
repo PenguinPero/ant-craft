@@ -15,12 +15,14 @@ namespace MravKraftAPI.Mravi
         private static byte _defaultDamage;
         private static byte _defaultArmor;
         private static byte _defaultArmorPen;
+        private static byte _defaultUpkeep;
 
         public static byte Cost { get; private set; }
         public static byte Duration { get; private set; }
 
         internal static void Load(Color headColor, byte cost = 50, byte duration = 30, byte vision = 2,
-                                  byte damage = 5, byte health = 50, byte armor = 0, byte armorPen = 0, float scale = 0.06f, float speed = 1f)
+                                  byte damage = 5, byte health = 50, byte armor = 0, byte armorPen = 0,
+                                  byte upkeep = 1, float scale = 0.06f, float speed = 1f)
         {
             _headColor = headColor;
             _defaultScale = scale;
@@ -28,6 +30,7 @@ namespace MravKraftAPI.Mravi
             _defaultHealth = health;
             _defaultArmor = armor;
             _defaultArmorPen = armorPen;
+            _defaultUpkeep = upkeep;
 
             Cost = cost;
             Duration = duration;
@@ -48,6 +51,7 @@ namespace MravKraftAPI.Mravi
             Damage = _defaultDamage;
             Vision = _defaultVision;
             Speed = _defaultSpeed;
+            Upkeep = _defaultUpkeep;
         }
 
         public void GrabResource(Patch patch)

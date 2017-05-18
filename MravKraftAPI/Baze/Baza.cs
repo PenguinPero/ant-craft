@@ -62,13 +62,14 @@ namespace MravKraftAPI.Baze
         private readonly Color _color;
         private byte upkeep;
         private int resources;
-        private List<Patch> visiblePatches;
+        private List<Patch> _visiblePatches;
+        private bool turnOne;
 
         public byte Owner { get; private set; }
         public int Resources { get { return (PlayerTurn == Owner) ? resources : 0; } }
         public int Health { get; private set; }
         public byte Upkeep { get { return (PlayerTurn == Owner) ? upkeep : (byte)0; } }
-        public List<Patch> VisiblePatches { get { return (PlayerTurn == Owner) ? visiblePatches : null; } }
+        public List<Patch> VisiblePatches { get { return (PlayerTurn == Owner) ? _visiblePatches : null; } }
         internal Vector2 Position { get { return _position; } }
         internal bool Alive { get; private set; }
         public Patch PatchHere { get; private set; }
@@ -84,6 +85,7 @@ namespace MravKraftAPI.Baze
             _color = owner.Color;
             _position = position;
             _productionQueue = new Queue<MravProcess>();
+            turnOne = true;
         }
 
         internal void Update()
@@ -94,17 +96,23 @@ namespace MravKraftAPI.Baze
                 return;
             }
 
-            visiblePatches = Visibility(4).ToList();
+            if (turnOne)
+            {
+                _visiblePatches = Visibility(4).ToList();
+                turnOne = false;
+            }
+            else _visiblePatches.ForEach(p => p.SetVisible(Owner));
+
             Production();
 
-            int count = Mrav.Mravi[Owner].Count;
+            int totalAntUpkeep = Mrav.Mravi[Owner].Sum(m => m.Upkeep);
 
-            try
-            {
-                upkeep = (byte)(_levelUpkeep.Select((e, i) => new { el = e, index = i })
-                                           .First(x => count < x.el).index - 1);
-            }
-            catch { upkeep = (byte)(_levelUpkeep.Length - 1); }
+            for (int i = _levelUpkeep.Length - 1; i >= 0; i--)
+                if (totalAntUpkeep > _levelUpkeep[i])
+                {
+                    upkeep = (byte)i;
+                    break;
+                }
         }
 
         internal void GiveResource()

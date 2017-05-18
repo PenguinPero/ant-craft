@@ -103,6 +103,7 @@ namespace MravKraftAPI.Mravi
         public byte ArmorPen { get; protected set; }
         public byte Vision { get; protected set; }
         public float Speed { get; protected set; }
+        public byte Upkeep { get; protected set; }
 
         protected TProp GetterCheck<TProp>(TProp field)
         {
