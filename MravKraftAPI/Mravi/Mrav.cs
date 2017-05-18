@@ -203,8 +203,7 @@ namespace MravKraftAPI.Mravi
 
         public void Face(Baza baza)
         {
-            if (baza.Owner != Owner && EnemyBase() != null || baza.Owner == Owner)
-                Face(baza.PatchHere);
+            Face(baza.PatchHere);
         }
 
         public void Face(Patch patch)
