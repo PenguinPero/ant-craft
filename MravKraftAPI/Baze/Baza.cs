@@ -105,7 +105,7 @@ namespace MravKraftAPI.Baze
 
             Production();
 
-            int totalAntUpkeep = Mrav.Mravi[Owner].Sum(m => m.Upkeep);
+            int totalAntUpkeep = Mrav.Mravi[Owner].Where(m => m != null).Sum(m => m.Upkeep);
 
             for (int i = _levelUpkeep.Length - 1; i >= 0; i--)
                 if (totalAntUpkeep > _levelUpkeep[i])
