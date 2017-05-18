@@ -25,22 +25,38 @@ namespace MravKraft.Botovi
             _radomizer = new Random();
         }
 
-        public void Update(Vojnik vojnik)
+        private void AttackClosest(Mrav mrav)
         {
-            
+            if (mrav.VisibleEnemies.Count > 0)
+            {
+                Mrav closest = mrav.VisibleEnemies.Where(m => m.Health > 0)
+                                                  .MinBy(m => mrav.DistanceTo(m.Position));
+
+                mrav.Attack(closest);
+
+                if (!mrav.MovedOrAttacked)
+                    mrav.MoveForward();
+
+                mrav.Attack(closest);
+            }
         }
 
-        public void Update(Leteci leteci)
+        private void Update(Vojnik vojnik)
         {
-
+            AttackClosest(vojnik);
         }
 
-        public void Update(Scout scout)
+        private void Update(Leteci leteci)
         {
-
+            AttackClosest(leteci);
         }
 
-        public void Update(Radnik radnik)
+        private void Update(Scout scout)
+        {
+            AttackClosest(scout);
+        }
+
+        private void Update(Radnik radnik)
         {
             if (radnik.CarryingFood)
             {
@@ -60,23 +76,18 @@ namespace MravKraft.Botovi
                 else radnik.GrabResource(closestWithResources);
 
                 radnik.MoveForward();
-                if (!radnik.TurnMovement) radnik.SetRotation(radnik.Rotation + PI);
+                if (!radnik.MovedOrAttacked) radnik.SetRotation(radnik.Rotation + PI);
             }
         }
 
-        public override void Update(Baza glavnaBaza)
-        {
-            
-        }
-
-        public override void Update(List<Mrav> mravi)
+        public override void Update(List<Mrav> ants, Baza mainBase)
         {
             countLeteci = 0;
             countVojnik = 0;
             countRadnik = 0;
             countScout = 0;
 
-            foreach (Mrav mrav in mravi)
+            foreach (Mrav mrav in ants)
             {
                 switch (mrav.Type)
                 {
@@ -85,18 +96,25 @@ namespace MravKraft.Botovi
                         countRadnik++;
                         break;
                     case MravType.Scout:
-
+                        Update(mrav as Scout);
+                        countScout++;
                         break;
                     case MravType.Vojnik:
-
+                        Update(mrav as Vojnik);
+                        countVojnik++;
                         break;
                     case MravType.Leteci:
-
+                        Update(mrav as Leteci);
+                        countLeteci++;
                         break;
                 }
-
             }
+
+            if (countRadnik < 50)
+                mainBase.ProduceUnit(MravType.Radnik, 1);
+            else mainBase.ProduceUnit(MravType.Leteci, 1);
         }
+
     }
 
 }

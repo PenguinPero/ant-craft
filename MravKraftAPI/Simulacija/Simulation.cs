@@ -23,6 +23,7 @@ namespace MravKraftAPI.Simulacija
         private static ushort _timeout;
         private static bool gameOver;
         private static string gameOverMessage;
+        private static Random _randomizer;
         //private static GameOutput ...
 
         /// <summary> Opens up game options windows form </summary>
@@ -47,8 +48,12 @@ namespace MravKraftAPI.Simulacija
         /// <param name="player1"> Player one bot </param>
         /// <param name="player2"> Player two bot </param>
         /// <param name="timeout"> Maximum duration for each player's turn </param>
-        public static void LoadDefault(ContentManager content, Player player1, Player player2, ushort timeout = 100)
+        /// <param name="seed"> Seed for randomizing, not used if it is equal -1 </param>
+        public static void LoadDefault(ContentManager content, Player player1, Player player2, ushort timeout = 100, int seed = 0)
         {
+            if (seed == -1) _randomizer = new Random();
+            else _randomizer = new Random(seed);
+
             Mrav.LoadDefault(content);
             Leteci.Load(content, Color.White);
             Radnik.Load(Color.Yellow);
@@ -78,46 +83,69 @@ namespace MravKraftAPI.Simulacija
 
         private static void RandomizeMap()
         {
-            Random rand = new Random();
-            int rX, rY;
+            int rX = _randomizer.Next(3, Patch.Height);
+            int rY = _randomizer.Next(3, Patch.Width / 4);
 
-            for (int i = 0; i < 150; i++)
+            Baza p1Base = Baza.Baze[0] = Patch.Map[rX, rY].BuildBase(_igraci[0]);
+            Baza p2Base = Baza.Baze[1] = Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].BuildBase(_igraci[1]);
+
+            // Slowdowns
+            for (int i = 0; i < 80; i++)
             {
-                rX = rand.Next(Patch.Height);
-                rY = rand.Next(Patch.Width);
-
-                if (i < 100)
+                do
                 {
-                    Patch.Map[rX, rY].Slowdown = true;
-                    Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].Slowdown = true;
-                }
-                else
-                {
-                    do
-                    {
-                        rX = rand.Next(Patch.Height);
-                        rY = rand.Next(Patch.Width);
-                    } while (Patch.Map[rX, rY].GetSlowdown());
+                    rX = _randomizer.Next(Patch.Height);
+                    rY = _randomizer.Next(Patch.Width);
+                } while (Patch.Map[rX, rY].GetSlowdown() ||
+                         p1Base.DistanceTo(Patch.Map[rX, rY].Center) < 100f ||
+                         p2Base.DistanceTo(Patch.Map[rX, rY].Center) < 100f);
 
-                    Patch.Map[rX, rY].GrowResource();
-                    Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].GrowResource();
-                }
+                Patch.Map[rX, rY].Slowdown = true;
+                Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].Slowdown = true;
             }
 
-            do
+            // Resources
+            for (int i = 0; i < 50; i++)
             {
-                rX = rand.Next(3, Patch.Height - 3);
-                rY = rand.Next(3, Patch.Width / 4);
-            } while (Patch.Map[rX, rY].GetSlowdown() || Patch.Map[rX, rY].Resources > 0);
+                do
+                {
+                    rX = _randomizer.Next(Patch.Height);
+                    rY = _randomizer.Next(Patch.Width);
+                } while (Patch.Map[rX, rY].GetSlowdown() ||
+                         Patch.Map[rX, rY].GetResources() > 0 ||
+                         p1Base.DistanceTo(Patch.Map[rX, rY].Center) < 100f ||
+                         p2Base.DistanceTo(Patch.Map[rX, rY].Center) < 100f);
 
-            Baza.Baze[0] = Patch.Map[rX, rY].BuildBase(_igraci[0]);
-            Baza.Baze[1] = Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].BuildBase(_igraci[1]);
+                float minDist = Math.Min(p1Base.DistanceTo(Patch.Map[rX, rY].Center),
+                                         p2Base.DistanceTo(Patch.Map[rX, rY].Center));
 
+                short resources = (short)(400 + (minDist / 100f) * 12);
+
+                Patch.Map[rX, rY].GrowResource(resources);
+                Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].GrowResource(resources);
+            }
+
+            // Starting ants
             for (int i = 0; i < 6; i++)
             {
-                Mrav.AddNew(0, new Radnik(Baza.Baze[0].Position, _igraci[0].Color, 0, (float)(rand.NextDouble() * Math.PI * 2)));
-                Mrav.AddNew(1, new Radnik(Baza.Baze[1].Position, _igraci[1].Color, 1, (float)(rand.NextDouble() * Math.PI * 2)));
+                Mrav.AddNew(0, new Radnik(Baza.Baze[0].Position, _igraci[0].Color, 0, (float)(_randomizer.NextDouble() * Math.PI * 2)));
+                Mrav.AddNew(1, new Radnik(Baza.Baze[1].Position, _igraci[1].Color, 1, (float)(_randomizer.NextDouble() * Math.PI * 2)));
             }
+
+#if false
+            Vector2 pos1 = Patch.Map[Patch.Height / 2 - 1, Patch.Width / 2].Center;
+            Vector2 pos2 = Patch.Map[Patch.Height / 2 + 1, Patch.Width / 2].Center;
+
+            for (int i = 0; i < 28; i++)
+            {
+                Mrav.AddNew(0, new Vojnik(pos1, _igraci[0].Color, 0, 0f));
+            }
+
+            for (int i = 0; i < 50; i++)
+            {
+                Mrav.AddNew(1, new Leteci(pos2, _igraci[1].Color, 1, 0f));
+            }
+#endif
         }
 
         /// <summary> One step of simulation, runs players' bots </summary>
@@ -159,10 +187,8 @@ namespace MravKraftAPI.Simulacija
             Patch.PlayerTurn = Mrav.PlayerTurn = Baza.PlayerTurn = playerID;
 
             Task pTask = Task.Factory.StartNew(() =>
-            {
-                _igraci[playerID].Update(Mrav.Mravi[playerID].Where(m => m != null).ToList());
-                _igraci[playerID].Update(Baza.Baze[playerID]);
-            });
+                _igraci[playerID].Update(Mrav.Mravi[playerID].Where(m => m != null && m.Alive).ToList(), Baza.Baze[playerID])
+            );
 
 #if true
             pTask.Wait();

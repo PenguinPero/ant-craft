@@ -6,28 +6,26 @@ namespace MravKraftAPI.Igraci
     using Mravi;
     using Baze;
 
+    /// <summary> Base class for player bots </summary>
     public abstract class Player
     {
-        /// <summary> ID igrača </summary>
+        /// <summary> Player ID </summary>
         public byte ID { get; internal set; }
 
-        /// <summary> Boja tima </summary>
+        /// <summary> Team color </summary>
         public Color Color { get; private set; }
 
-        /// <summary> Bazni konstruktor igrača </summary>
-        /// <param name="color"> Boja tima </param>
+        /// <summary> Base constructor for player </summary>
+        /// <param name="color"> Team color </param>
         public Player(Color color)
         {
             Color = color;
         }
 
-        /// <summary> Update metoda za mrave </summary>
-        /// <param name="mravi"> Lista svih zivih mravi </param>
-        public abstract void Update(List<Mrav> mravi);
-
-        /// <summary> Update metoda za bazu </summary>
-        /// <param name="glavnaBaza"> Glavna baza od igraca </param>
-        public abstract void Update(Baza glavnaBaza);
+        /// <summary> Update method for bots </summary>
+        /// <param name="ants"> List of alive owned ants </param>
+        /// <param name="mainBase"> Main base </param>
+        public abstract void Update(List<Mrav> ants, Baza mainBase);
 
     }
 }

@@ -184,6 +184,11 @@ namespace MravKraftAPI.Baze
             return false;
         }
 
+        public float DistanceTo(Vector2 position)
+        {
+            return (position - _position).Length();
+        }
+
         internal void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(_back, _position, null, _defaultColor, 0f, _origin, _defaultScale, SpriteEffects.None, 0f);

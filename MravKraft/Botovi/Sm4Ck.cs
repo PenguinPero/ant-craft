@@ -17,24 +17,26 @@ namespace MravKraft.Botovi
         public Sm4Ck(Color color) : base(color)
         { }
 
-        public override void Update(Vojnik vojnik)
+        public void Update(Vojnik vojnik)
+        {
+
+        }
+
+        public void Update(Leteci leteci)
         {
         }
 
-        public override void Update(Leteci leteci)
+        public void Update(Scout scout)
         {
         }
 
-        public override void Update(Scout scout)
+        public void Update(Radnik radnik)
         {
         }
 
-        public override void Update(Radnik radnik)
+        public override void Update(List<Mrav> ants, Baza mainBase)
         {
-        }
-
-        public override void Update(Baza glavnaBaza)
-        {
+            
         }
 
     }
