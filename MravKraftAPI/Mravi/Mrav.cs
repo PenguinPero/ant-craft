@@ -104,6 +104,7 @@ namespace MravKraftAPI.Mravi
         public byte Vision { get; protected set; }
         public float Speed { get; protected set; }
         public byte Upkeep { get; protected set; }
+        public bool JustSpawned { get; internal set; }
 
         protected TProp GetterCheck<TProp>(TProp field)
         {
@@ -169,7 +170,7 @@ namespace MravKraftAPI.Mravi
 
         private void Update()
         {
-            movedOrAttacked = false;
+            JustSpawned = movedOrAttacked = false;
             visiblePatches = Visibility().ToList();
 
             visibleEnemies.Clear();

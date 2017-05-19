@@ -17,7 +17,8 @@ namespace MravKraftAPI.Simulacija
 
     public static class Simulation
     {
-        private static Player[] _igraci;
+        private static Player[] _players;
+        private static Baza _player1Base, _player2Base;
         private static Camera2D _mainCamera;
         private static ControlForm _controlForm;
         private static ushort _timeout;
@@ -69,7 +70,7 @@ namespace MravKraftAPI.Simulacija
             _mainCamera.DownRightBound = new Vector2(Patch.StartPoint.X + Patch.Width * Patch.Size,
                                                      Patch.StartPoint.Y + Patch.Height * Patch.Size);
 
-            _igraci = new Player[] { player1, player2 };
+            _players = new Player[] { player1, player2 };
             player1.ID = 0;
             player2.ID = 1;
 
@@ -86,8 +87,8 @@ namespace MravKraftAPI.Simulacija
             int rX = _randomizer.Next(3, Patch.Height);
             int rY = _randomizer.Next(3, Patch.Width / 4);
 
-            Baza p1Base = Baza.Baze[0] = Patch.Map[rX, rY].BuildBase(_igraci[0]);
-            Baza p2Base = Baza.Baze[1] = Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].BuildBase(_igraci[1]);
+            _player1Base = Baza.Baze[0] = Patch.Map[rX, rY].BuildBase(_players[0]);
+            _player2Base = Baza.Baze[1] = Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].BuildBase(_players[1]);
 
             // Slowdowns
             for (int i = 0; i < 80; i++)
@@ -97,8 +98,8 @@ namespace MravKraftAPI.Simulacija
                     rX = _randomizer.Next(Patch.Height);
                     rY = _randomizer.Next(Patch.Width);
                 } while (Patch.Map[rX, rY].GetSlowdown() ||
-                         p1Base.DistanceTo(Patch.Map[rX, rY].Center) < 100f ||
-                         p2Base.DistanceTo(Patch.Map[rX, rY].Center) < 100f);
+                         _player1Base.DistanceTo(Patch.Map[rX, rY].Center) < 100f ||
+                         _player2Base.DistanceTo(Patch.Map[rX, rY].Center) < 100f);
 
                 Patch.Map[rX, rY].Slowdown = true;
                 Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].Slowdown = true;
@@ -113,11 +114,11 @@ namespace MravKraftAPI.Simulacija
                     rY = _randomizer.Next(Patch.Width);
                 } while (Patch.Map[rX, rY].GetSlowdown() ||
                          Patch.Map[rX, rY].GetResources() > 0 ||
-                         p1Base.DistanceTo(Patch.Map[rX, rY].Center) < 100f ||
-                         p2Base.DistanceTo(Patch.Map[rX, rY].Center) < 100f);
+                         _player1Base.DistanceTo(Patch.Map[rX, rY].Center) < 100f ||
+                         _player2Base.DistanceTo(Patch.Map[rX, rY].Center) < 100f);
 
-                float minDist = Math.Min(p1Base.DistanceTo(Patch.Map[rX, rY].Center),
-                                         p2Base.DistanceTo(Patch.Map[rX, rY].Center));
+                float minDist = Math.Min(_player1Base.DistanceTo(Patch.Map[rX, rY].Center),
+                                         _player2Base.DistanceTo(Patch.Map[rX, rY].Center));
 
                 short resources = (short)(400 + (minDist / 100f) * 12);
 
@@ -128,22 +129,22 @@ namespace MravKraftAPI.Simulacija
             // Starting ants
             for (int i = 0; i < 6; i++)
             {
-                Mrav.AddNew(0, new Radnik(Baza.Baze[0].Position, _igraci[0].Color, 0, (float)(_randomizer.NextDouble() * Math.PI * 2)));
-                Mrav.AddNew(1, new Radnik(Baza.Baze[1].Position, _igraci[1].Color, 1, (float)(_randomizer.NextDouble() * Math.PI * 2)));
+                Mrav.AddNew(0, new Radnik(_player1Base.Position, _players[0].Color, 0, (float)(_randomizer.NextDouble() * Math.PI * 2)));
+                Mrav.AddNew(1, new Radnik(_player2Base.Position, _players[1].Color, 1, (float)(_randomizer.NextDouble() * Math.PI * 2)));
             }
 
 #if false
             Vector2 pos1 = Patch.Map[Patch.Height / 2 - 1, Patch.Width / 2].Center;
             Vector2 pos2 = Patch.Map[Patch.Height / 2 + 1, Patch.Width / 2].Center;
 
-            for (int i = 0; i < 28; i++)
+            for (int i = 0; i < 130; i++)
             {
-                Mrav.AddNew(0, new Vojnik(pos1, _igraci[0].Color, 0, 0f));
+                Mrav.AddNew(0, new Leteci(pos1, _igraci[0].Color, 0, 0f));
             }
 
             for (int i = 0; i < 50; i++)
             {
-                Mrav.AddNew(1, new Leteci(pos2, _igraci[1].Color, 1, 0f));
+                Mrav.AddNew(1, new Vojnik(pos2, _igraci[1].Color, 1, 0f));
             }
 #endif
         }
@@ -158,24 +159,21 @@ namespace MravKraftAPI.Simulacija
             Patch.ResetVisibility();
             Leteci.UpdateAnimation();
 
-            Baza.Baze[0].Update();
-            Baza.Baze[1].Update();
+            _player1Base.Update();
+            Mrav player1Spawn = _player1Base.Production();
+
+            _player2Base.Update();
+            Mrav player2Spawn = _player2Base.Production();
 
             // game end
-            if (!Baza.Baze[0].Alive) { gameOver = true; gameOverMessage = $"{_igraci[0].GetType().Name} lost the game."; return; }
-            if (!Baza.Baze[1].Alive) { gameOver = true; gameOverMessage = $"{_igraci[1].GetType().Name} lost the game."; return; }
+            if (!_player1Base.Alive) { gameOver = true; gameOverMessage = $"{_players[0].GetType().Name} lost the game."; return; }
+            if (!_player2Base.Alive) { gameOver = true; gameOverMessage = $"{_players[1].GetType().Name} lost the game."; return; }
 
             Mrav.ResetAnts();
             Patch.UpdateMap();
 
-#if true
-
-            if (Keyboard.GetState().IsKeyDown(Keys.Enter))
-            {
-                Mrav.AddNew(0, new Vojnik(Baza.Baze[0].Position, _igraci[0].Color, 0, 0f));
-                Mrav.AddNew(1, new Leteci(Baza.Baze[1].Position, _igraci[1].Color, 1, 0f));
-            }
-#endif
+            if (player1Spawn != null) player1Spawn.JustSpawned = true;
+            if (player2Spawn != null) player2Spawn.JustSpawned = true;
 
             // BOTOVI
             for (byte i = 0; i < 2; i++)
@@ -187,7 +185,7 @@ namespace MravKraftAPI.Simulacija
             Patch.PlayerTurn = Mrav.PlayerTurn = Baza.PlayerTurn = playerID;
 
             Task pTask = Task.Factory.StartNew(() =>
-                _igraci[playerID].Update(Mrav.Mravi[playerID].Where(m => m != null && m.Alive).ToList(), Baza.Baze[playerID])
+                _players[playerID].Update(Mrav.Mravi[playerID].Where(m => m != null && m.Alive).ToList(), Baza.Baze[playerID])
             );
 
 #if true

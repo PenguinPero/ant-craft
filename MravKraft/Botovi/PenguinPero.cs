@@ -41,8 +41,6 @@ namespace MravKraft.Botovi
 
                 if (!mrav.MovedOrAttacked)
                     mrav.MoveForward();
-
-                mrav.Attack(closest);
             }
         }
 
@@ -140,10 +138,14 @@ namespace MravKraft.Botovi
             }
         }
 
+        private List<string> spawns = new List<string>();
+
         private void UpdateAll(List<Mrav> mravi)
         {
             foreach (Mrav mrav in mravi)
             {
+                if (mrav.JustSpawned) spawns.Add($"[{mrav.ID}] Rotation: {mrav.Rotation}");
+
                 switch (mrav.Type)
                 {
                     case MravType.Radnik:

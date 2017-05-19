@@ -107,8 +107,6 @@ namespace MravKraftAPI.Baze
             }
             else _visiblePatches.ForEach(p => p.SetVisible(Owner));
 
-            Production();
-
             int totalAntUpkeep = Mrav.Mravi[Owner].Where(m => m != null).Sum(m => m.Upkeep);
 
             for (int i = _levelUpkeep.Length - 1; i >= 0; i--)
@@ -151,7 +149,7 @@ namespace MravKraftAPI.Baze
                 }
         }
 
-        private void Production()
+        internal Mrav Production()
         {
             if (_productionQueue.Count > 0)
             {
@@ -159,27 +157,33 @@ namespace MravKraftAPI.Baze
 
                 if (next.DurationLeft == 0)
                 {
+                    Mrav spawn = null;
+
                     switch (next.MravTip)
                     {
                         case MravType.Radnik:
-                            Mrav.AddNew(Owner, new Radnik(_position, _color, Owner, (float)(_randomizer.NextDouble() * Math.PI * 2)));
+                            Mrav.AddNew(Owner, spawn = new Radnik(_position, _color, Owner, (float)(_randomizer.NextDouble() * Math.PI * 2)));
                             break;
                         case MravType.Scout:
-                            Mrav.AddNew(Owner, new Scout(_position, _color, Owner, (float)(_randomizer.NextDouble() * Math.PI * 2)));
+                            Mrav.AddNew(Owner, spawn = new Scout(_position, _color, Owner, (float)(_randomizer.NextDouble() * Math.PI * 2)));
                             break;
                         case MravType.Vojnik:
-                            Mrav.AddNew(Owner, new Vojnik(_position, _color, Owner, (float)(_randomizer.NextDouble() * Math.PI * 2)));
+                            Mrav.AddNew(Owner, spawn = new Vojnik(_position, _color, Owner, (float)(_randomizer.NextDouble() * Math.PI * 2)));
                             break;
                         case MravType.Leteci:
-                            Mrav.AddNew(Owner, new Leteci(_position, _color, Owner, (float)(_randomizer.NextDouble() * Math.PI * 2)));
+                            Mrav.AddNew(Owner, spawn = new Leteci(_position, _color, Owner, (float)(_randomizer.NextDouble() * Math.PI * 2)));
                             break;
                     }
 
                     if (--next.CountLeft == 0) _productionQueue.Dequeue();
                     else next.ResetDuration();
+
+                    return spawn;
                 }
                 else next.DurationLeft--;
             }
+
+            return null;
         }
 
         /// <summary>
