@@ -1,0 +1,8 @@
+# ignore build output
+.vs/
+MravKraft/bin/
+MravKraft/obj/
+MravKraft/Content/bin
+MravKraft/Content/obj
+MravKraftAPI/bin/
+MravKraftAPI/obj/
