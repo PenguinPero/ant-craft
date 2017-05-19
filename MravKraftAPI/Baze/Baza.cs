@@ -69,10 +69,14 @@ namespace MravKraftAPI.Baze
         public int Resources { get { return (PlayerTurn == Owner) ? resources : 0; } }
         public int Health { get; private set; }
         public byte Upkeep { get { return (PlayerTurn == Owner) ? upkeep : (byte)0; } }
+
+        /// <summary> <see cref="Patch"/> over which base is built </summary>
+        public Patch PatchHere { get; private set; }
+        /// <summary> List of visible <see cref="Patch"/>es in range </summary>
         public List<Patch> VisiblePatches { get { return (PlayerTurn == Owner) ? _visiblePatches : null; } }
+
         internal Vector2 Position { get { return _position; } }
         internal bool Alive { get; private set; }
-        public Patch PatchHere { get; private set; }
 
         internal Baza(Vector2 position, Player owner, Patch patchHere)
         {
@@ -178,6 +182,14 @@ namespace MravKraftAPI.Baze
             }
         }
 
+        /// <summary>
+        /// If enough resources, enqueues <paramref name="count"/> number of ants
+        /// of specified <paramref name="type"/> to production queue.
+        /// Returns true if the action was completed.
+        /// </summary>
+        /// <param name="type"> <see cref="MravType"/> of <see cref="Mrav"/> to produce </param>
+        /// <param name="count"> Numbers of ants to produce </param>
+        /// <returns> True if action completed. </returns>
         public bool ProduceUnit(MravType type, byte count)
         {
             if (PlayerTurn != Owner) return false;
@@ -192,6 +204,9 @@ namespace MravKraftAPI.Baze
             return false;
         }
 
+        /// <summary> Calculates the euclid distance between this <see cref="Baza"/> and a <see cref="Vector2"/> <paramref name="position"/>. </summary>
+        /// <param name="position"> <see cref="Vector2"/> position of object </param>
+        /// <returns> Euclid distance between this <see cref="Baza"/> and a <see cref="Vector2"/> <paramref name="position"/> </returns>
         public float DistanceTo(Vector2 position)
         {
             return (position - _position).Length();

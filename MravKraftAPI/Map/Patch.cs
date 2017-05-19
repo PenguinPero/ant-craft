@@ -11,11 +11,11 @@ namespace MravKraftAPI.Map
     using Baze;
     using Igraci;
 
-    public struct PXY
+    internal struct PXY
     {
-        public readonly byte X, Y;
+        internal readonly byte X, Y;
 
-        public PXY(byte x, byte y)
+        internal PXY(byte x, byte y)
         {
             X = x;
             Y = y;
@@ -25,9 +25,13 @@ namespace MravKraftAPI.Map
 
     public class Patch
     {
+        /// <summary> Patch map matrix [<see cref="Height"/>, <see cref="Width"/>] </summary>
         public static Patch[,] Map { get; private set; }
+        /// <summary> Horizontal number of patches </summary>
         public static byte Width { get; private set; }
+        /// <summary> Vertical number of patches </summary>
         public static byte Height { get; private set; }
+        /// <summary> Size of each patch (both width and height) </summary>
         public static byte Size { get; private set; }
 
         private static Texture2D _backTexture, _frontTexture, _wallTexture;
@@ -37,6 +41,10 @@ namespace MravKraftAPI.Map
         private static float _defaultScale;
         private static Random _randomizer;
 
+        /// <summary>
+        /// Amount of which each marked patch slows down ants crossing it.
+        /// Should be in range of 0f to 1f, where 0f does nothing and 1f stops them completely.
+        /// </summary>
         public static float SlowdownValue { get; private set; }
 
         internal static Vector2 StartPoint { get; private set; }
@@ -129,17 +137,28 @@ namespace MravKraftAPI.Map
         private short resources;
         private bool slowdown;
 
+        /// <summary>
+        /// Amount of resources on this patch,
+        /// returns -1 if patch is not visible to a friendly ant.
+        /// </summary>
         public short Resources { get { return (visible[PlayerTurn]) ? resources : (short)-1; } }
+
+        /// <summary> <see cref="Vector2"/> position of patch's center. </summary>
         public Vector2 Center { get { return _resPosition; } }
+
+        /// <summary> Is patch visible to any friendly ant. </summary>
         public bool Visible { get { return visible[PlayerTurn]; } }
 
+        /// <summary> If true, ants crossing this patch will be slowed down by <see cref="SlowdownValue"/>. </summary>
         public bool? Slowdown
         {
             get { return (visible[PlayerTurn]) ? (bool?)slowdown : null; }
             internal set { slowdown = (bool)value; }
         }
 
+        /// <summary> X coordinate of this patch in <see cref="Map"/> </summary>
         public int X { get; private set; }
+        /// <summary> Y coordinate of this patch in <see cref="Map"/> </summary>
         public int Y { get; private set; }
 
         internal readonly HashSet<int>[] Mravi;

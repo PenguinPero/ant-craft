@@ -89,6 +89,7 @@ namespace MravKraftAPI.Mravi
         protected float rotation;
         protected short health;
         protected bool alive;
+        protected bool visibleToEnemy;
 
         private bool movedOrAttacked;
         private List<Patch> visiblePatches;
@@ -121,12 +122,15 @@ namespace MravKraftAPI.Mravi
         public bool MovedOrAttacked { get { return GetterCheck(movedOrAttacked); } }
         public bool Alive { get { return GetterCheck(alive); } }
 
-        public List<Patch> VisiblePatches { get { return GetterCheck(visiblePatches); } }
+        /// <summary> <see cref="Patch"/> on which ant is currently standing </summary>
         public Patch PatchHere { get { return GetterCheck(patchHere); } }
+        /// <summary> <see cref="Patch"/>es visible in ant's range </summary>
+        public List<Patch> VisiblePatches { get { return GetterCheck(visiblePatches); } }
+        /// <summary> List of enemy <see cref="Mrav"/>s visible in ant's range </summary>
         public List<Mrav> VisibleEnemies { get { return GetterCheck(visibleEnemies); } }
 
+        /// <summary> Ant's type (Worker/Scout/Ground/Flying) </summary>
         public MravType Type { get; private set; }
-        protected bool visibleToEnemy;
 
         internal Mrav(Vector2 position, Color color, byte owner, float rotation, MravType type)
         {
@@ -180,6 +184,8 @@ namespace MravKraftAPI.Mravi
             patchHere.Mravi[Owner].Add(ID);
         }
 
+        /// <summary> Sets the ant's rotation to specified value in radians. </summary>
+        /// <param name="rotation"> Rotation in radians </param>
         public void SetRotation(float rotation)
         {
             if (PlayerTurn != Owner || !alive) return;
@@ -188,11 +194,16 @@ namespace MravKraftAPI.Mravi
             direction = new Vector2((float)Math.Cos(rotation), (float)Math.Sin(rotation));
         }
 
+        /// <summary> Calculates the euclid distance between this <see cref="Mrav"/> and a <see cref="Vector2"/> <paramref name="position"/>. </summary>
+        /// <param name="position"> <see cref="Vector2"/> position of object </param>
+        /// <returns> Euclid distance between this <see cref="Mrav"/> and a <see cref="Vector2"/> <paramref name="position"/> </returns>
         public float DistanceTo(Vector2 position)
         {
             return (position - this.position).Length();
         }
 
+        /// <summary> Turns <see cref="Mrav"/> around to face targeted <see cref="Vector2"/> position. </summary>
+        /// <param name="position"> <see cref="Vector2"/> position to face </param>
         public void Face(Vector2 position)
         {
             if (PlayerTurn != Owner || !alive) return;
@@ -200,11 +211,15 @@ namespace MravKraftAPI.Mravi
             SetRotation((float)Math.Atan2(position.Y - this.position.Y, position.X - this.position.X));
         }
 
-        public void Face(Baza baza)
+        /// <summary> Turns <see cref="Mrav"/> around to face targeted <see cref="Baza"/>. </summary>
+        /// <param name="baseToface"> <see cref="Baza"/> to face </param>
+        public void Face(Baza baseToface)
         {
-            Face(baza.PatchHere);
+            Face(baseToface.PatchHere);
         }
 
+        /// <summary> Turns <see cref="Mrav"/> around to face targeted <see cref="Patch"/>. </summary>
+        /// <param name="patch"> <see cref="Patch"/> to face </param>
         public void Face(Patch patch)
         {
             if (patch == null) return;
@@ -230,34 +245,50 @@ namespace MravKraftAPI.Mravi
             return Patch.GetPatchAt(position + direction * distance);
         }
 
-        public void Attack(Mrav mrav)
+        /// <summary>
+        /// Faces targeted <see cref="Mrav"/> and if in range (magical 12f) deals
+        /// <see cref="Damage"/> to it. Also takes damage from that <see cref="Mrav"/> back.
+        /// Does nothing if it already moved or attacked this turn or if the targeted <see cref="Mrav"/> is null.
+        /// </summary>
+        /// <param name="antToAttack"> <see cref="Mrav"/> to attack </param>
+        public void Attack(Mrav antToAttack)
         {
-            if (movedOrAttacked || PlayerTurn != Owner || !alive || mrav == null) return;
+            if (movedOrAttacked || PlayerTurn != Owner || !alive || antToAttack == null) return;
 
-            Face(mrav.position);
+            Face(antToAttack.position);
 
-            if (DistanceTo(mrav.position) <= 12f)
+            if (DistanceTo(antToAttack.position) <= 12f)
             {
-                mrav.TakeDamage(Damage, ArmorPen);
-                TakeDamage(mrav.Damage, mrav.ArmorPen);
+                antToAttack.TakeDamage(Damage, ArmorPen);
+                TakeDamage(antToAttack.Damage, antToAttack.ArmorPen);
 
                 movedOrAttacked = true;
             }
         }
 
-        public void Attack(Baza baza)
+        /// <summary>
+        /// Faces targeted <see cref="Baza"/> and if in range (magical 12f) deals <see cref="Damage"/> to it. 
+        /// Does nothing if it already moved or attacked this turn or if the targeted <see cref="Baza"/> is null.
+        /// </summary>
+        /// <param name="baseToAttack"> <see cref="Baza"/> to attack </param>
+        public void Attack(Baza baseToAttack)
         {
-            if (movedOrAttacked || PlayerTurn != Owner || !alive || baza == null) return;
+            if (movedOrAttacked || PlayerTurn != Owner || !alive || baseToAttack == null) return;
 
-            Face(baza.Position);
+            Face(baseToAttack.Position);
 
-            if (DistanceTo(baza.Position) <= 12f)
+            if (DistanceTo(baseToAttack.Position) <= 12f)
             {
-                baza.TakeDamage(Damage);
+                baseToAttack.TakeDamage(Damage);
                 movedOrAttacked = true;
             }
         }
 
+        /// <summary>
+        /// Moves <see cref="Speed"/> steps forward.
+        /// Does nothing if it already moved or attacked this turn
+        /// or if the position in front is out of bounds.
+        /// </summary>
         public void MoveForward()
         {
             if (movedOrAttacked || PlayerTurn != Owner || !alive) return;
@@ -304,14 +335,18 @@ namespace MravKraftAPI.Mravi
                 }
         }
 
+        /// <summary>
+        /// Checks if the enemy <see cref="Baza"/> is visible, if it is returns it.
+        /// Othwerwise returns null.
+        /// </summary>
+        /// <returns> Enemy <see cref="Baza"/> or null </returns>
         public Baza EnemyBase()
         {
             if (PlayerTurn != Owner || !Alive) return null;
 
             Baza enemyBase = Baza.Baze[1 - Owner];
 
-            if (Math.Abs(enemyBase.PatchHere.X - patchHere.X) > Vision ||
-                Math.Abs(enemyBase.PatchHere.Y - patchHere.Y) > Vision)
+            if (!enemyBase.PatchHere.Visible)
                 return null;
 
             return enemyBase;
