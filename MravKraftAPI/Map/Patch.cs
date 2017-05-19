@@ -131,6 +131,7 @@ namespace MravKraftAPI.Map
 
         public short Resources { get { return (visible[PlayerTurn]) ? resources : (short)-1; } }
         public Vector2 Center { get { return _resPosition; } }
+        public bool Visible { get { return visible[PlayerTurn]; } }
 
         public bool? Slowdown
         {

@@ -89,7 +89,6 @@ namespace MravKraftAPI.Mravi
         protected float rotation;
         protected short health;
         protected bool alive;
-        protected bool returnedHit;
 
         private bool movedOrAttacked;
         private List<Patch> visiblePatches;
@@ -166,7 +165,7 @@ namespace MravKraftAPI.Mravi
 
         private void Update()
         {
-            returnedHit = movedOrAttacked = false;
+            movedOrAttacked = false;
             visiblePatches = Visibility().ToList();
 
             visibleEnemies.Clear();
@@ -240,12 +239,7 @@ namespace MravKraftAPI.Mravi
             if (DistanceTo(mrav.position) <= 12f)
             {
                 mrav.TakeDamage(Damage, ArmorPen);
-
-                if (!mrav.returnedHit)
-                {
-                    TakeDamage(mrav.Damage, mrav.ArmorPen);
-                    mrav.returnedHit = true;
-                }
+                TakeDamage(mrav.Damage, mrav.ArmorPen);
 
                 movedOrAttacked = true;
             }
