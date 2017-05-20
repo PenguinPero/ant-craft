@@ -154,7 +154,7 @@ namespace MravKraftAPI.Simulacija
             Patch.ResetVisibility();
             Leteci.UpdateAnimation();
 
-            List<Mrav> workers = (turnOne) ? workers = new List<Mrav>(_player1Base.StartingWorkers().Concat(_player2Base.StartingWorkers())) : null;
+            List<Mrav> workers = (turnOne) ? new List<Mrav>(_player1Base.StartingWorkers().Concat(_player2Base.StartingWorkers())) : null;
 
             _player1Base.Update();
             Mrav p1Spawn = _player1Base.Production();

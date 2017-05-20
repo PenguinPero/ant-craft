@@ -99,6 +99,15 @@ namespace MravKraft.Botovi
 
         private void Update(Radnik radnik)
         {
+            // test custom propertija
+            if (radnik.JustSpawned) radnik["intentions"] = new Queue<int>();
+            else
+            {
+                Queue<int> radnikIntentions = (Queue<int>)radnik["intentions"];
+                radnikIntentions.Enqueue(countRadnik);
+                radnikIntentions.Dequeue();
+            }
+
             foreach (Patch patch in radnik.VisiblePatches) // pronalazenje patcheva (slanje bazi)
             {
                 if (resPatches.Contains(patch)) // update istrosenih

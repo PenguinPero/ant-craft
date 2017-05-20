@@ -96,6 +96,7 @@ namespace MravKraftAPI.Mravi
         private List<Patch> visiblePatches;
         private Patch patchHere;
         private List<Mrav> visibleEnemies;
+        private Dictionary<string, object> _customProp;
 
         public byte Owner { get; private set; }
         public int ID { get; internal set; }
@@ -134,6 +135,23 @@ namespace MravKraftAPI.Mravi
         /// <summary> Ant's type (Worker/Scout/Ground/Flying) </summary>
         public MravType Type { get; private set; }
 
+        /// <summary> Custom ant properties </summary>
+        /// <param name="key"> Key to bind to custom property </param>
+        /// <returns> Object assigned to key </returns>
+        public object this[string key]
+        {
+            get { return _customProp[key]; }
+            set { _customProp[key] = value; }
+        }
+
+        /// <summary> Checks if this ant has custom property with a specified <paramref name="key"/> </summary>
+        /// <param name="key"> Key to check </param>
+        /// <returns> True/false contains key or not </returns>
+        public bool HasProp(string key)
+        {
+            return _customProp.ContainsKey(key);
+        }
+
         internal Mrav(Vector2 position, Color color, byte owner, float rotation, MravType type)
         {
             this.position = position;
@@ -146,6 +164,7 @@ namespace MravKraftAPI.Mravi
             bodyIndex = 0;
 
             _color = color;
+            _customProp = new Dictionary<string, object>();
 
             patchHere = Patch.GetPatchAt(position);
             visibleEnemies = new List<Mrav>();
