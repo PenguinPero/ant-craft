@@ -59,7 +59,7 @@ namespace MravKraftAPI.Mravi
             _recycle[owner].Push(id);
         }
 
-        internal static void AddNew(byte owner, Mrav newMrav)
+        internal static Mrav AddNew(byte owner, Mrav newMrav)
         {
             if (_recycle[owner].Count > 0)
             {
@@ -75,6 +75,7 @@ namespace MravKraftAPI.Mravi
             }
 
             newMrav.SetPatch();
+            return newMrav;
         }
 
         internal static void DrawAll(SpriteBatch spriteBatch)
@@ -165,12 +166,12 @@ namespace MravKraftAPI.Mravi
                 return;
             }
 
-            visibleToEnemy = false;
+            JustSpawned = false;
         }
 
         private void Update()
         {
-            JustSpawned = movedOrAttacked = false;
+            visibleToEnemy = movedOrAttacked = false;
             visiblePatches = Visibility().ToList();
 
             visibleEnemies.Clear();

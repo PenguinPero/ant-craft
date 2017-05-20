@@ -18,7 +18,6 @@
 
         internal void ResetDuration()
         {
-
             switch (MravTip)
             {
                 case MravType.Radnik:

@@ -25,6 +25,7 @@ namespace MravKraftAPI.Simulacija
         private static bool gameOver;
         private static string gameOverMessage;
         private static Random _randomizer;
+        private static bool turnOne;
         //private static GameOutput ...
 
         /// <summary> Opens up game options windows form </summary>
@@ -37,7 +38,7 @@ namespace MravKraftAPI.Simulacija
         }
 
         /// <summary> Sets up game camera </summary>
-        /// <param name="viewport"> Viewport of the window, GraphicsDevice.Viewport </param>
+        /// <param name="viewport"> Viewport of the window, <see cref="GraphicsDevice.Viewport"/> </param>
         /// <param name="center"> Camera's initial center point </param>
         public static void SetupCamera(Viewport viewport, Vector2 center)
         {
@@ -80,6 +81,7 @@ namespace MravKraftAPI.Simulacija
             Patch.PlayerVision = 3;
 
             RandomizeMap();
+            turnOne = true;
         }
 
         private static void RandomizeMap()
@@ -126,13 +128,6 @@ namespace MravKraftAPI.Simulacija
                 Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].GrowResource(resources);
             }
 
-            // Starting ants
-            for (int i = 0; i < 6; i++)
-            {
-                Mrav.AddNew(0, new Radnik(_player1Base.Position, _players[0].Color, 0, (float)(_randomizer.NextDouble() * Math.PI * 2)));
-                Mrav.AddNew(1, new Radnik(_player2Base.Position, _players[1].Color, 1, (float)(_randomizer.NextDouble() * Math.PI * 2)));
-            }
-
 #if false
             Vector2 pos1 = Patch.Map[Patch.Height / 2 - 1, Patch.Width / 2].Center;
             Vector2 pos2 = Patch.Map[Patch.Height / 2 + 1, Patch.Width / 2].Center;
@@ -159,23 +154,30 @@ namespace MravKraftAPI.Simulacija
             Patch.ResetVisibility();
             Leteci.UpdateAnimation();
 
+            List<Mrav> workers = (turnOne) ? workers = new List<Mrav>(_player1Base.StartingWorkers().Concat(_player2Base.StartingWorkers())) : null;
+
             _player1Base.Update();
-            Mrav player1Spawn = _player1Base.Production();
+            Mrav p1Spawn = _player1Base.Production();
 
             _player2Base.Update();
-            Mrav player2Spawn = _player2Base.Production();
+            Mrav p2Spawn = _player2Base.Production();
 
-            // game end
+            // player death / game end
             if (!_player1Base.Alive) { gameOver = true; gameOverMessage = $"{_players[0].GetType().Name} lost the game."; return; }
             if (!_player2Base.Alive) { gameOver = true; gameOverMessage = $"{_players[1].GetType().Name} lost the game."; return; }
 
             Mrav.ResetAnts();
             Patch.UpdateMap();
 
-            if (player1Spawn != null) player1Spawn.JustSpawned = true;
-            if (player2Spawn != null) player2Spawn.JustSpawned = true;
+            if (p1Spawn != null) p1Spawn.JustSpawned = true;
+            if (p2Spawn != null) p2Spawn.JustSpawned = true;
+            if (turnOne)
+            {
+                workers.All(m => m.JustSpawned = true);
+                turnOne = false;
+            }
 
-            // BOTOVI
+            // players' bots update
             for (byte i = 0; i < 2; i++)
                 UpdatePlayer(i);
         }

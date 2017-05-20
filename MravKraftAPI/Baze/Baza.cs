@@ -22,13 +22,13 @@ namespace MravKraftAPI.Baze
         private static byte[] _mravCost;
         private static Random _randomizer;
         private static ushort[] _levelUpkeep;
-        private static byte _defaultResourceDrop;
+        private static byte _defaultResourceDrop, _defaultWorkers;
 
         internal static byte PlayerTurn { get; set; }
         internal static Baza[] Baze { get; set; }
 
         internal static void Load(ContentManager content, Color backColor, ushort[] levelUpkeep, int startingResources = 50,
-                                  int defaultHealth = 100000, float scale = 0.18f)
+                                  byte startingWorkers = 6, int defaultHealth = 100000, float scale = 0.18f)
         {
             _front = content.Load<Texture2D>(@"Images\Baza\bazaFront");
             _back = content.Load<Texture2D>(@"Images\Baza\bazaBack");
@@ -40,6 +40,7 @@ namespace MravKraftAPI.Baze
             _defaultHealth = defaultHealth;
             _levelUpkeep = levelUpkeep;
             _defaultResourceDrop = (byte)_levelUpkeep.Length;
+            _defaultWorkers = startingWorkers;
 
             _mravCost = new byte[4];
             _mravCost[(byte)MravType.Radnik] = Radnik.Cost;
@@ -162,16 +163,16 @@ namespace MravKraftAPI.Baze
                     switch (next.MravTip)
                     {
                         case MravType.Radnik:
-                            Mrav.AddNew(Owner, spawn = new Radnik(_position, _color, Owner, (float)(_randomizer.NextDouble() * Math.PI * 2)));
+                            spawn = Mrav.AddNew(Owner, new Radnik(_position, _color, Owner, (float)(_randomizer.NextDouble() * Math.PI * 2)));
                             break;
                         case MravType.Scout:
-                            Mrav.AddNew(Owner, spawn = new Scout(_position, _color, Owner, (float)(_randomizer.NextDouble() * Math.PI * 2)));
+                            spawn = Mrav.AddNew(Owner, new Scout(_position, _color, Owner, (float)(_randomizer.NextDouble() * Math.PI * 2)));
                             break;
                         case MravType.Vojnik:
-                            Mrav.AddNew(Owner, spawn = new Vojnik(_position, _color, Owner, (float)(_randomizer.NextDouble() * Math.PI * 2)));
+                            spawn = Mrav.AddNew(Owner, new Vojnik(_position, _color, Owner, (float)(_randomizer.NextDouble() * Math.PI * 2)));
                             break;
                         case MravType.Leteci:
-                            Mrav.AddNew(Owner, spawn = new Leteci(_position, _color, Owner, (float)(_randomizer.NextDouble() * Math.PI * 2)));
+                            spawn = Mrav.AddNew(Owner, new Leteci(_position, _color, Owner, (float)(_randomizer.NextDouble() * Math.PI * 2)));
                             break;
                     }
 
@@ -184,6 +185,12 @@ namespace MravKraftAPI.Baze
             }
 
             return null;
+        }
+
+        internal IEnumerable<Mrav> StartingWorkers()
+        {
+            for (byte i = 0; i < _defaultWorkers; i++)
+                yield return Mrav.AddNew(Owner, new Radnik(_position, _color, Owner, (float)(_randomizer.NextDouble() * Math.PI * 2)));
         }
 
         /// <summary>
