@@ -6,3 +6,6 @@ MravKraft/Content/bin
 MravKraft/Content/obj
 MravKraftAPI/bin/
 MravKraftAPI/obj/
+
+# ignore main class
+MravKraft/GameMain.cs
