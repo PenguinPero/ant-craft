@@ -185,12 +185,12 @@ namespace MravKraftAPI.Mravi
                 return;
             }
 
-            JustSpawned = false;
+            visibleToEnemy = JustSpawned = false;
         }
 
         private void Update()
         {
-            visibleToEnemy = movedOrAttacked = false;
+            movedOrAttacked = false;
             visiblePatches = Visibility().ToList();
 
             visibleEnemies.Clear();
