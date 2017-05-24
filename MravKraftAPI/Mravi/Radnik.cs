@@ -54,19 +54,30 @@ namespace MravKraftAPI.Mravi
             Upkeep = _defaultUpkeep;
         }
 
-        public void GrabResource(Patch patch)
+        /// <summary>
+        /// Tries to grab resource, returns false if there are no more resources on target <see cref="Patch"/>
+        /// or if target <see cref="Patch"/> is too far away.
+        /// </summary>
+        /// <param name="patch"> Targeted patch </param>
+        /// <returns> True/false resource was grabbed or not </returns>
+        public bool GrabResource(Patch patch)
         {
-            if (patch.Resources <= 0 || PlayerTurn != Owner || !alive) return;
+            if (patch.Resources <= 0 || PlayerTurn != Owner || !alive) return false;
 
             Face(patch);
 
-            if (patch.TakeResource(position, ID))
-                carryingFood = true;
+            if (patch.TakeResource(position, ID)) return (carryingFood = true);
+            return false;
         }
 
-        public void DropResource()
+        /// <summary>
+        /// Tries to drop resource at your <see cref="Baza"/>, if not close enough moves one step forward to it.
+        /// Returns true if resource was dropped, false otherwise.
+        /// </summary>
+        /// <returns> True/false resource was dropped or not </returns>
+        public bool DropResource()
         {
-            if (!carryingFood || PlayerTurn != Owner || !alive) return;
+            if (!carryingFood || PlayerTurn != Owner || !alive) return false;
 
             Face(Baza.Baze[Owner]);
 
@@ -74,7 +85,11 @@ namespace MravKraftAPI.Mravi
             {
                 Baza.Baze[Owner].GiveResource();
                 carryingFood = false;
+                return true;
             }
+
+            MoveForward();
+            return false;
         }
 
         internal override void Draw(SpriteBatch spriteBatch)
