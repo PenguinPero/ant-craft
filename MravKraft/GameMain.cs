@@ -12,7 +12,7 @@ namespace MravKraft
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        private const int WIDTH = 960, HEIGHT = 540, LEFT = 100, TOP = 100;
+        private const int WIDTH = 1920, HEIGHT = 1080, LEFT = 100, TOP = 100;
 
         public GameMain()
         {

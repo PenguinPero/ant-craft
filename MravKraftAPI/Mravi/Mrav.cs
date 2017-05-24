@@ -185,12 +185,12 @@ namespace MravKraftAPI.Mravi
                 return;
             }
 
-            JustSpawned = false;
+            visibleToEnemy = JustSpawned = false;
         }
 
         private void Update()
         {
-            visibleToEnemy = movedOrAttacked = false;
+            movedOrAttacked = false;
             visiblePatches = Visibility().ToList();
 
             visibleEnemies.Clear();
@@ -263,6 +263,8 @@ namespace MravKraftAPI.Mravi
 
         internal Patch PatchAhead(float distance)
         {
+
+
             return Patch.GetPatchAt(position + direction * distance);
         }
 
@@ -274,16 +276,31 @@ namespace MravKraftAPI.Mravi
         /// <param name="antToAttack"> <see cref="Mrav"/> to attack </param>
         public void Attack(Mrav antToAttack)
         {
-            if (movedOrAttacked || PlayerTurn != Owner || !alive || antToAttack == null) return;
+            if (movedOrAttacked || PlayerTurn != Owner || !alive || antToAttack == null ) return;
 
             Face(antToAttack.position);
 
-            if (DistanceTo(antToAttack.position) <= 12f)
+            if (DistanceTo(antToAttack.position) <= 12f )//&& !antToAttack.MovedOrAttacked)
             {
                 antToAttack.TakeDamage(Damage, ArmorPen);
-                TakeDamage(antToAttack.Damage, antToAttack.ArmorPen);
+                
+                if (!antToAttack.MovedOrAttacked)
+                {
 
+                    antToAttack.Face(position);
+                    TakeDamage(antToAttack.Damage, antToAttack.ArmorPen);
+                    antToAttack.movedOrAttacked = true;
+                }
                 movedOrAttacked = true;
+                //dodat canAttack?
+                foreach (var mrav in Mravi[0])
+                {
+                    if (mrav != null) if (DistanceTo(mrav.position) <= 12f || antToAttack.DistanceTo(mrav.position) <= 12f) { mrav.movedOrAttacked = true; }
+                }
+                foreach (var mrav in Mravi[1])
+                {
+                    if (mrav != null) if (DistanceTo(mrav.position) <= 12f || antToAttack.DistanceTo(mrav.position) <= 12f) { mrav.movedOrAttacked = true; }
+                }
             }
         }
 

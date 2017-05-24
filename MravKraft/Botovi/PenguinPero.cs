@@ -59,22 +59,22 @@ namespace MravKraft.Botovi
 
         private void Update(Leteci leteci)
         {
-            if (countLeteci >= 20 || leteciStart)
+            if (leteciStart)
             {
                 leteciStart = true;
                 AttackClosest(leteci);
 
                 if (!leteci.MovedOrAttacked && enemyBase != null)
                 {
-                    leteci.Attack(enemyBase);
+                    //leteci.Attack(enemyBase);
 
                     if (!leteci.MovedOrAttacked)
                         leteci.MoveForward();
                 }
-                else RandomMovement(leteci);
+                //else RandomMovement(leteci);
 
-                if (enemyBase == null)
-                    enemyBase = leteci.EnemyBase();
+                //if (enemyBase == null)
+                //    enemyBase = leteci.EnemyBase();
             }
         }
 

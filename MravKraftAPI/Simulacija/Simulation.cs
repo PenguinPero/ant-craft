@@ -128,18 +128,18 @@ namespace MravKraftAPI.Simulacija
                 Patch.Map[Patch.Height - rX - 1, Patch.Width - rY - 1].GrowResource(resources);
             }
 
-#if false
-            Vector2 pos1 = Patch.Map[Patch.Height / 2 - 1, Patch.Width / 2].Center;
+#if true
+            Vector2 pos1 = Patch.Map[Patch.Height / 2 , Patch.Width / 2].Center;
             Vector2 pos2 = Patch.Map[Patch.Height / 2 + 1, Patch.Width / 2].Center;
-
-            for (int i = 0; i < 130; i++)
-            {
-                Mrav.AddNew(0, new Leteci(pos1, _igraci[0].Color, 0, 0f));
-            }
 
             for (int i = 0; i < 50; i++)
             {
-                Mrav.AddNew(1, new Vojnik(pos2, _igraci[1].Color, 1, 0f));
+                Mrav.AddNew(0, new Vojnik(pos1, _players[0].Color, 0, 0f));
+            }
+
+            for (int i = 0; i < 130; i++)
+            {
+                Mrav.AddNew(1, new Leteci(pos2, _players[1].Color, 1, 0f));
             }
 #endif
         }
