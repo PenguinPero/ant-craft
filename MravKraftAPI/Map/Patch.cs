@@ -10,6 +10,7 @@ namespace MravKraftAPI.Map
 {
     using Baze;
     using Igraci;
+    using Mravi;
 
     internal struct PXY
     {
@@ -40,6 +41,7 @@ namespace MravKraftAPI.Map
         private static Point _size;
         private static float _defaultScale;
         private static Random _randomizer;
+        private static byte _maxWorkers;
 
         /// <summary>
         /// Amount of which each marked patch slows down ants crossing it.
@@ -52,7 +54,7 @@ namespace MravKraftAPI.Map
         internal static byte PlayerTurn { get; set; }
 
         internal static void Load(ContentManager content, Vector2 startPoint, Color backColor, Color frontColor,
-                                  Color wallColor, byte width = 96, byte height = 54, byte size = 20, float slowdown = 0.5f)
+                                  Color wallColor, byte width = 96, byte height = 54, byte size = 20, byte workers = 8, float slowdown = 0.5f)
         {
             Map = new Patch[Height = height, Width = width];
             Size = size;
@@ -69,6 +71,7 @@ namespace MravKraftAPI.Map
             _wallOrigin = new Vector2(_wallTexture.Width / 2f, _wallTexture.Height / 2f);
             _defaultScale = (float)size / _backTexture.Width;
             _randomizer = new Random();
+            _maxWorkers = workers;
 
             for (int i = 0; i < height; i++)
                 for (int j = 0; j < width; j++)
@@ -162,12 +165,14 @@ namespace MravKraftAPI.Map
         public int Y { get; private set; }
 
         internal readonly HashSet<int>[] Mravi;
+        internal readonly HashSet<int>[] Workers;
 
         internal Patch(int x, int y)
         {
             _position = new Rectangle(new Point((int)(StartPoint.X) + y * Size, (int)(StartPoint.Y) + x * Size), _size);
             _resPosition = new Vector2(_position.X + Size / 2f, _position.Y + Size / 2f);
             Mravi = new HashSet<int>[] { new HashSet<int>(), new HashSet<int>() };
+            Workers = new HashSet<int>[] { new HashSet<int>(), new HashSet<int>() };
             X = x;
             Y = y;
 
@@ -183,6 +188,20 @@ namespace MravKraftAPI.Map
             else if (PlayerVision == 1 && !visible[0]) fogOfWar = true;
             else if (PlayerVision == 2 && !visible[1]) fogOfWar = true;
             //else if (PlayerVision == 0) fogOfWar = true;
+
+            if (resources > 0)
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    Mrav.PlayerTurn = (byte)i;
+
+                    Workers[i].RemoveWhere(mID =>
+                    {
+                        Radnik current = (Radnik)Mrav.Mravi[i][mID];
+                        return !current.Alive || !current.CarryingFood;
+                    });
+                }
+            }
         }
 
         internal IEnumerable<int> MraviHere(byte owner)
@@ -213,14 +232,22 @@ namespace MravKraftAPI.Map
             return slowdown;
         }
 
+        private bool AssignWorker(int id)
+        {
+            if (Workers[PlayerTurn].Count == _maxWorkers) return false;
+
+            Workers[PlayerTurn].Add(id);
+            return true;
+        }
+
         internal void SetVisible(byte player)
         {
             visible[player] = true;
         }
 
-        internal bool TakeResource(Vector2 myPosition)
+        internal bool TakeResource(Vector2 myPosition, int id)
         {
-            if (resources == 0 || DistanceTo(myPosition) > 12f) return false;
+            if (!AssignWorker(id) || resources == 0 || DistanceTo(myPosition) > 12f) return false;
 
             resources--;
             return true;

@@ -60,7 +60,7 @@ namespace MravKraftAPI.Mravi
 
             Face(patch);
 
-            if (patch.TakeResource(position))
+            if (patch.TakeResource(position, ID))
                 carryingFood = true;
         }
 
