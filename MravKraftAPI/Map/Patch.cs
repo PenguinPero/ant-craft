@@ -197,8 +197,9 @@ namespace MravKraftAPI.Map
 
                     Workers[i].RemoveWhere(mID =>
                     {
-                        Radnik current = (Radnik)Mrav.Mravi[i][mID];
-                        return !current.Alive || !current.CarryingFood;
+                        Mrav current = Mrav.Mravi[i][mID];
+
+                        return current == null || !current.Alive || !((Radnik)current).CarryingFood;
                     });
                 }
             }
