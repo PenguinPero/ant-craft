@@ -215,6 +215,20 @@ namespace MravKraftAPI.Mravi
             direction = new Vector2((float)Math.Cos(rotation), (float)Math.Sin(rotation));
         }
 
+        /// <summary> Sets the ant's rotation to specified value in degrees. </summary>
+        /// <param name="rotation"> Rotation in degrees </param>
+        public void SetRotation(int rotation)
+        {
+            if (PlayerTurn != Owner || !alive) return;
+
+            if (rotation == 180)
+            {
+                this.rotation = (float)Math.PI;
+                direction = new Vector2(-1, 0);
+            }
+            else SetRotation(rotation / 180f * (float)Math.PI);
+        }
+
         /// <summary> Calculates the euclid distance between this <see cref="Mrav"/> and a <see cref="Vector2"/> <paramref name="position"/>. </summary>
         /// <param name="position"> <see cref="Vector2"/> position of object </param>
         /// <returns> Euclid distance between this <see cref="Mrav"/> and a <see cref="Vector2"/> <paramref name="position"/> </returns>

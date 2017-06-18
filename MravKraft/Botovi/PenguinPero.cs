@@ -32,6 +32,12 @@ namespace MravKraft.Botovi
         private int startingSpawns = 6;
         private const float PATCH_DIST_FIX = 0.00001f;
 
+        private bool scoutProducing = false;
+        private int numScouts = 0;
+        private int scoutDir;
+
+        private bool rushEnemy = false;
+
         public PenguinPero(Color color) : base(color)
         {
             _radomizer = new Random();
@@ -60,42 +66,77 @@ namespace MravKraft.Botovi
 
         private void Update(Vojnik vojnik)
         {
-            AttackClosest(vojnik);
+            
         }
 
         private void Update(Leteci leteci)
         {
-            if (countLeteci >= 20 || leteciStart)
-            {
-                leteciStart = true;
-                AttackClosest(leteci);
 
-                if (!leteci.MovedOrAttacked)
-                {
-                    if (enemyBase != null)
-                    {
-                        leteci.Attack(enemyBase);
-
-                        if (!leteci.MovedOrAttacked)
-                            leteci.MoveForward();
-                    }
-                    else RandomMovement(leteci);
-                }
-
-                if (enemyBase == null)
-                    enemyBase = leteci.EnemyBase();
-            }
         }
 
         private void Update(Scout scout)
         {
-            RandomMovement(scout);
+            if (scout.JustSpawned)
+            {
+                scoutProducing = false;
 
-            foreach (Patch patch in scout.VisiblePatches) // pronalazenje patcheva (slanje bazi)
-                if (patch.Resources > 0) AddResourcePatch(patch);
+                if (numScouts <= 1)
+                {
+                    scout["explorer"] = numScouts;
+                    scout["direction"] = (numScouts == 0) ? 1 : -1;
+                    scout.SetRotation((numScouts) * PI + PI / 2);
+                    numScouts++;
+                }
+            }
 
-            if (enemyBase == null)
-                enemyBase = scout.EnemyBase();
+            if (scout.HasProp("explorer"))
+            {
+                int direction = (int)scout["direction"];
+                scout.MoveForward();
+
+                if (direction == 0)
+                {
+                    scout["distance"] = (float)scout["distance"] - scout.Speed;
+
+                    if ((float)scout["distance"] <= 0)
+                    {
+                        scout["direction"] = -1 * (int)scout["lastDir"];
+
+                        if ((int)scout["direction"] == 1) scout.SetRotation(PI / 2f);
+                        else scout.SetRotation(3 * PI / 2f);
+                    }
+                }
+
+                if (!scout.MovedOrAttacked)
+                {
+                    if (direction == 0)
+                    {
+                        scout["explorer"] = 1 - (int)scout["explorer"];
+                        scout.SetRotation(scout.Rotation + PI);
+                        scoutDir = 180 - scoutDir;
+                    }
+                    else
+                    {
+                        if ((int)scout["explorer"] == 0) scout.SetRotation(scoutDir);
+                        else scout.SetRotation(180 - scoutDir);
+
+
+                        scout["lastDir"] = direction;
+                        scout["direction"] = 0;
+                        scout["distance"] = Patch.Size * 6f;
+                    }
+                }
+            }
+            else
+            {
+                RandomMovement(scout);
+
+                foreach (Patch patch in scout.VisiblePatches.Where(p => p.Resources > 0)) // pronalazenje patcheva (slanje bazi)
+                    AddResourcePatch(patch);
+
+                if (enemyBase == null)
+                    enemyBase = scout.EnemyBase();
+            }
         }
 
         private void Update(Radnik radnik)
@@ -125,7 +166,7 @@ namespace MravKraft.Botovi
 
                 radnik.Face(target);
 
-                if (radnik.DistanceTo(target.Center) <= 12f) 
+                if (radnik.DistanceTo(target.Center) <= 12f)
                 {
                     if (radnik.GrabResource(target)) radnik.SetRotation(radnik.Rotation + PI); // grab resource and turn around
                     else if (target.Resources == 0) readyToWork.Add(radnik); // if wasted say you're ready
@@ -140,8 +181,8 @@ namespace MravKraft.Botovi
                 if (!radnik.MovedOrAttacked) radnik.SetRotation(radnik.Rotation + PI);
 
                 // pronalazenje patcheva (slanje bazi)
-                foreach (Patch patch in radnik.VisiblePatches)
-                    if (patch.Resources > 0) AddResourcePatch(patch);
+                foreach (Patch patch in radnik.VisiblePatches.Where(p => p.Resources > 0))
+                    AddResourcePatch(patch);
 
                 readyToWork.Add(radnik); // oznaci ga ka spremnog da kupi
             }
@@ -190,16 +231,25 @@ namespace MravKraft.Botovi
 
         public override void Update(List<Mrav> mravi, Baza glavnaBaza)
         {
-            if (myBase == null) myBase = glavnaBaza;
+            if (myBase == null) // turn one
+            {
+                myBase = glavnaBaza;
+                scoutDir = (ID == 0) ? 0 : 180;
+            }
 
             countLeteci = countVojnik = countRadnik = countScout = 0;
 
             UpdateAll(mravi);
             HandleResourcePatches();
 
-            if (unitTotal % 6 == 0)
+            if (numScouts <= 1 || unitTotal % 8 == 0 && !scoutProducing)
             {
-                if (glavnaBaza.ProduceUnit(MravType.Scout, 1)) unitTotal++;
+                if (glavnaBaza.ProduceUnit(MravType.Scout, 1))
+                {
+                    unitTotal++;
+                    scoutProducing = true;
+                }
+
                 return;
             }
 
@@ -221,16 +271,16 @@ namespace MravKraft.Botovi
 
         private void HandleResourcePatches()
         {
-            while (true)
+            if (resourcePatches.Count > 0)
             {
-                var topPatch = resourcePatches.FirstOrDefault();
+                var patch = resourcePatches.Where(p => p.Value.Resources == 0).FirstOrDefault();
 
-                if (resourcePatches.Count > 0 && topPatch.Value.Resources == 0)
+                try
                 {
-                    resourcePatches.Remove(topPatch.Key); // brisi sve one koji su potroseni u zadnjen updateu
-                    workersForPatch.Remove(topPatch.Value);
+                    resourcePatches.Remove(patch.Key);
+                    workersForPatch.Remove(patch.Value);
                 }
-                else break;
+                catch { }
             }
 
             // postavi radnicima koji su "Ready to work" metu
